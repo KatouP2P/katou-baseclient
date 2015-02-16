@@ -3,7 +3,9 @@ package ga.nurupeaches.kato.network.protocol;
 import ga.nurupeaches.kato.network.Peer;
 import ga.nurupeaches.kato.network.packets.Packet;
 
+import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 
 /**
@@ -28,9 +30,9 @@ public interface Protocol {
 	 * @param address - The address of the peer
 	 * @return The peer object
 	 */
-	public default Peer registerPeer(SocketAddress address){
-		Peer peer = new Peer(address);
-		getConnectedPeers().put(address, peer);
+	public default Peer registerPeer(SocketChannel channel) throws IOException {
+		Peer peer = new Peer(channel);
+		getConnectedPeers().put(channel.getRemoteAddress(), peer);
 		return peer;
 	}
 

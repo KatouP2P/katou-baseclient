@@ -3,7 +3,7 @@ package ga.nurupeaches.kato.network.manager.tcp;
 import ga.nurupeaches.kato.KatouClient;
 import ga.nurupeaches.kato.network.Peer;
 import ga.nurupeaches.kato.network.manager.NetworkManager;
-import ga.nurupeaches.kato.network.protocol.Message;
+import ga.nurupeaches.kato.network.packets.Packet;
 import ga.nurupeaches.kato.network.protocol.Protocol;
 
 import java.io.IOException;
@@ -29,44 +29,68 @@ public class TCPNetworkManager implements NetworkManager {
 	}
 
 	@Override
-	public void tick(){
+	public void tick() {
 		if(!CLOSE_REQUESTED.get()){
 			try{
-				// Accept the new connection. Doesn't block.
-				SocketChannel newConnection = channel.accept();
-
-				// Don't process null connections!
-				if(newConnection == null){
-					return;
-				}
-
-				KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + newConnection.getRemoteAddress());
-
-				// Initialize a buffer to retrieve the length of the version name.
-				ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-				newConnection.read(buffer);
-				// Reasign the buffer variable to a buffer for the version string.
-				buffer = ByteBuffer.allocate(buffer.getInt());
-				newConnection.read(buffer);
-
-				Peer peer = Protocol.PROTOCOL.registerPeer(newConnection.getRemoteAddress());
-				// Finally, convert the bytes from the buffer to a string and give it to the new peer.
-				peer.setVersion(new String(buffer.array(), StandardCharsets.UTF_8));
-
-				Protocol.PROTOCOL.sendPeerMessage(peer, Message.REQUEST_STATUS);
-			} catch (IOException e){
+				// Accepts any new connection. Doesn't block.
+				handleNewConnection(channel.accept());
+				peerTick();
+			} catch (IOException e) {
 				KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle connection!", e);
 			}
 		}
 	}
 
+	public void handleNewConnection(SocketChannel newConnection) throws IOException {
+		// Don't process null connections!
+		if(newConnection != null){
+			KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + newConnection.getRemoteAddress());
+
+			// Read it in a raw way; there's no point in creating a new ByteBuffer for just one integer.
+			int size = newConnection.socket().getInputStream().read();
+
+			// Initialize a buffer to retrieve the length of the version name.
+			ByteBuffer buffer = ByteBuffer.allocate(size);
+			newConnection.read(buffer);
+
+			Peer peer = Protocol.PROTOCOL.registerPeer(newConnection);
+			// Finally, convert the bytes from the buffer to a string and give it to the new peer.
+			peer.setVersion(new String(buffer.array(), StandardCharsets.UTF_8));
+
+			// TODO: Call event saying a new peer has connected.
+		}
+	}
+
+	public void peerTick() {
+		Protocol.PROTOCOL.getConnectedPeers().values().parallelStream().forEach((peer) -> {
+
+			if(peer.getChannel() instanceof SocketChannel){
+				SocketChannel channel = (SocketChannel)peer.getChannel();
+				try{
+					ByteBuffer buffer = peer.getBuffer();
+					channel.read(buffer);
+
+					Packet packet = Packet.convertPacket(buffer.get());
+					packet.read(buffer);
+
+					// TODO: Process packet data
+
+					buffer.clear();
+				} catch (IOException e) {
+					KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle peer", e);
+				}
+			}
+
+		});
+	}
+
 	@Override
-	public AbstractSelectableChannel getChannel(){
+	public AbstractSelectableChannel getChannel() {
 		return channel;
 	}
 
 	@Override
-	public void requestClosure(){
+	public void requestClosure() {
 		CLOSE_REQUESTED.compareAndSet(false, true);
 	}
 

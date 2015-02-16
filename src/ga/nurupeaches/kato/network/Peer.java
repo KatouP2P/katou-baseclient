@@ -1,6 +1,9 @@
 package ga.nurupeaches.kato.network;
 
+import ga.nurupeaches.kato.network.manager.NetworkManager;
+
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.NetworkChannel;
 import java.util.ArrayList;
@@ -11,11 +14,11 @@ import java.util.List;
  */
 public class Peer<T extends ByteChannel & NetworkChannel> {
 
+	private final ByteBuffer buffer = ByteBuffer.allocate(NetworkManager.DEFAULT_BUFFER_SIZE);
 	private final T channel;
 	private List<KatouFile> files = new ArrayList<>();
 	private String version;
 	private int nextBlock;
-
 
 	/**
 	 * Constructs a peer with the given address.
@@ -42,13 +45,16 @@ public class Peer<T extends ByteChannel & NetworkChannel> {
 		return nextBlock;
 	}
 
-
 	public T getChannel(){
 		return channel;
 	}
 
 	public String getVersion(){
 		return version;
+	}
+
+	public ByteBuffer getBuffer() {
+		return buffer;
 	}
 
 	public void setVersion(String version){

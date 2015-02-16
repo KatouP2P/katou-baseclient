@@ -3,9 +3,8 @@ package ga.nurupeaches.kato.network.protocol;
 import ga.nurupeaches.kato.network.Peer;
 import ga.nurupeaches.kato.network.packets.Packet;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.NetworkChannel;
+import java.nio.channels.ByteChannel;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +32,8 @@ public class SimplePeerProtocol implements Protocol {
 
 	@Override
 	public void sendPeerMessage(Peer peer, Message message) {
-		NetworkChannel channel = peer.getChannel();
+		ByteChannel channel = peer.getChannel();
+
 	}
 
 }

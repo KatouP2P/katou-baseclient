@@ -2,6 +2,7 @@ package ga.nurupeaches.kato.network.packets;
 
 import ga.nurupeaches.kato.utils.UnsafeUtils;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -9,20 +10,24 @@ import java.util.Map;
 
 public abstract class Packet {
 
+	public static int DEFAULT_BUFFER_SIZE = 1024;
+
 	/**
 	 * An ID lookup field; uses bytes.
 	 */
 	public static final Map<Byte, Class<? extends Packet>> ID_LOOKUP = new HashMap<>();
 
+	/**
+	 * The origin of the packet.
+	 */
 	private InetSocketAddress origin;
 
 	/**
 	 * Register the packets related to Katou. You could register your own packets if you want.
 	 */
 	static {
-		ID_LOOKUP.put((byte) 0x01, PacketMetadata.class);
+		ID_LOOKUP.put((byte) 0x01, PacketStatus.class);
 	}
-
 
 	/**
 	 * Matches an ID with a new, empty packet.
@@ -57,14 +62,14 @@ public abstract class Packet {
 
 	/**
 	 * Reads data from the given buffer.
-	 * @param buffer - Buffer to read from.
+	 * @param buffer Buffer to read from.
 	 */
-	public abstract void read(ByteBuffer buffer);
+	public abstract void read(ByteBuffer buffer) throws IOException;
 
 	/**
 	 * Writes data to the given buffer.
-	 * @param buffer - Buffer to write to.
+	 * @param buffer Buffer to write to.
 	 */
-	public abstract void write(ByteBuffer buffer);
+	public abstract void write(ByteBuffer buffer) throws IOException;
 
 }

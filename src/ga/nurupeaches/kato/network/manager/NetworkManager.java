@@ -1,20 +1,13 @@
 package ga.nurupeaches.kato.network.manager;
 
-import ga.nurupeaches.kato.io.Chunk;
-
 import java.nio.channels.spi.AbstractSelectableChannel;
 
 public interface NetworkManager {
 
 	/**
-	 * The default header size, measured in bytes.
-	 */
-	public static final int HEADER_SIZE = 1;
-
-	/**
 	 * The default buffer size, measured in bytes.
 	 */
-	public static final int DEFAULT_BUFFER_SIZE = Chunk.DEFAULT_CHUNK_SIZE + HEADER_SIZE;
+	public static final int DEFAULT_BUFFER_SIZE = 128;
 
 	/**
 	 * Get the channel associated with this NetworkManager

@@ -8,7 +8,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -21,19 +24,32 @@ public class KatouFile {
 	private Map<Integer, Chunk> fileChunks = new HashMap<>();
 	private RandomAccessFile file;
 	private Path path;
-	private String name;
-	private long size;
+	private KatouMetadata metadata;
 
-	public KatouFile(String name, Path path, long size){
+	/**
+	 * Constructs a KatouFile based on an existed file.
+	 * @param path
+	 */
+	public KatouFile(Path path){
+		if(!Files.exists(path)){
+			throw new IllegalArgumentException("Attempted to create a KatouFile with a non-existent file!");
+		}
+	}
+
+	public KatouFile(String name, long size, Path path){
 		this.path = path;
-		this.name = name;
-		this.size = size;
+		metadata = new KatouMetadata();
+		metadata.setName(name);
+		metadata.setSize(size);
+
+
 		try{
 			this.file = new RandomAccessFile(path.toFile(), "rw");
 		} catch (FileNotFoundException e){
 			KatouClient.LOGGER.log(Level.SEVERE, "Failed to create new file for KatouFile@" + path + "!");
 		}
 	}
+
 
 	public Path getPath(){
 		return path;
