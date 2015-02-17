@@ -26,8 +26,8 @@ public interface Protocol {
 	public Map<SocketAddress, Peer> getConnectedPeers();
 
 	/**
-	 * Registers a peer with the given InetSocketAddress
-	 * @param address - The address of the peer
+	 * Registers a peer with the given SocketChannel
+	 * @param channel The channel of the peer
 	 * @return The peer object
 	 */
 	public default Peer registerPeer(SocketChannel channel) throws IOException {
@@ -38,20 +38,20 @@ public interface Protocol {
 
 	/**
 	 * Sends a message to a peer.
-	 * @param peer - The desired peer
-	 * @param message - The message we want to send.
+	 * @param peer The desired peer
+	 * @param message The message we want to send.
 	 */
 	public void sendPeerMessage(Peer peer, Message message);
 
 	/**
 	 * Parses a peer message (packet).
-	 * @param packet - The message to process.
+	 * @param packet The message to process.
 	 */
 	public void parsePeerMessage(Packet packet);
 
 	/**
 	 * Retrieves a peer based on the given address.
-	 * @param address - The peer's address
+	 * @param address The peer's address
 	 * @return A peer, or <code>null</code> if none was found.
 	 */
 	public default Peer getPeer(SocketAddress address){

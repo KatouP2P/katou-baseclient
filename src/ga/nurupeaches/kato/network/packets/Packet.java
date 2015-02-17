@@ -3,7 +3,7 @@ package ga.nurupeaches.kato.network.packets;
 import ga.nurupeaches.kato.utils.UnsafeUtils;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +20,7 @@ public abstract class Packet {
 	/**
 	 * The origin of the packet.
 	 */
-	private InetSocketAddress origin;
+	private SocketAddress origin;
 
 	/**
 	 * Register the packets related to Katou. You could register your own packets if you want.
@@ -49,14 +49,14 @@ public abstract class Packet {
 	 * Sets the origin of this packet.
 	 * @param address - The Original sender of the packet.
 	 */
-	public void setOrigin(InetSocketAddress address){
+	public void setOrigin(SocketAddress address){
 		this.origin = address;
 	}
 
 	/**
 	 * Returns the origin of this packet.
 	 */
-	public InetSocketAddress getOrigin(){
+	public SocketAddress getOrigin(){
 		return origin;
 	}
 

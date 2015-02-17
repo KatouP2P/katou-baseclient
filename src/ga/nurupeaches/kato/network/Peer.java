@@ -2,7 +2,6 @@ package ga.nurupeaches.kato.network;
 
 import ga.nurupeaches.kato.network.manager.NetworkManager;
 
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.NetworkChannel;
@@ -21,20 +20,19 @@ public class Peer<T extends ByteChannel & NetworkChannel> {
 	private int nextBlock;
 
 	/**
-	 * Constructs a peer with the given address.
-	 * @param address - The address of the peer.
+	 * Constructs a peer with the given channel.
+	 * @param channel The channel of the peer.
 	 */
 	public Peer(T channel){
 		this.channel = channel;
 	}
 
-	@Override
-	public boolean equals(Object other){
-		return other instanceof Peer && ((Peer)other).channel.equals(channel);
-	}
-
 	public void registerFile(KatouFile file){
 		files.add(file);
+	}
+
+	public boolean hasFile(KatouMetadata metadata){
+		return files.contains(metadata);
 	}
 
 	public void setNextBlock(int nextBlock) {
@@ -59,6 +57,11 @@ public class Peer<T extends ByteChannel & NetworkChannel> {
 
 	public void setVersion(String version){
 		this.version = version;
+	}
+
+	@Override
+	public boolean equals(Object other){
+		return other instanceof Peer && ((Peer)other).channel.equals(channel);
 	}
 
 }

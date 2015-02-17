@@ -1,9 +1,5 @@
 package ga.nurupeaches.kato.listening;
 
-import ga.nurupeaches.kato.listening.events.Event;
-
-import java.nio.ByteBuffer;
-
 public interface EventHandler {
 
 	/**
@@ -12,6 +8,6 @@ public interface EventHandler {
 	 * @param event - Type of event.
 	 * @param buffer - The data associated with the event.
 	 */
-	public void onCall(Event event, ByteBuffer buffer);
+//	public void onCall(Event event, ByteBuffer buffer);
 
 }

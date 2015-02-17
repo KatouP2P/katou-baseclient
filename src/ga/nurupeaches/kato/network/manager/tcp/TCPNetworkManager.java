@@ -71,6 +71,7 @@ public class TCPNetworkManager implements NetworkManager {
 					channel.read(buffer);
 
 					Packet packet = Packet.convertPacket(buffer.get());
+					packet.setOrigin(channel.getRemoteAddress());
 					packet.read(buffer);
 
 					// TODO: Process packet data

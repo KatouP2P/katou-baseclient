@@ -51,24 +51,27 @@ public class KatouMetadata {
 	 * Sets the file size.
 	 * @param size The size of the metadata
 	 */
-	public void setSize(long size) {
+	public KatouMetadata setSize(long size) {
 		this.size = size;
+		return this;
 	}
 
 	/**
 	 * Sets the name of the metadata
 	 * @param name The name of the metadata
 	 */
-	public void setName(String name) {
+	public KatouMetadata setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	/**
 	 * Sets the hash of the metadata
 	 * @param hash The hash of the file
 	 */
-	public void setHash(String hash) {
+	public KatouMetadata setHash(String hash) {
 		this.hash = hash;
+		return this;
 	}
 
 	@Override

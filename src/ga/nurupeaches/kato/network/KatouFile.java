@@ -1,20 +1,17 @@
 package ga.nurupeaches.kato.network;
 
-import ga.nurupeaches.kato.KatouClient;
+import ga.nurupeaches.kato.Configuration;
 import ga.nurupeaches.kato.io.Chunk;
 import ga.nurupeaches.kato.io.MemoryChunk;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Represents a file hosted/shared by KatouClients.
@@ -30,37 +27,27 @@ public class KatouFile {
 	 * Constructs a KatouFile based on an existed file.
 	 * @param path
 	 */
-	public KatouFile(Path path){
+	public KatouFile(Path path) throws IOException {
 		if(!Files.exists(path)){
 			throw new IllegalArgumentException("Attempted to create a KatouFile with a non-existent file!");
 		}
+
+		this(path.getFileName().toString(), )
 	}
 
-	public KatouFile(String name, long size, Path path){
-		this.path = path;
-		metadata = new KatouMetadata();
-		metadata.setName(name);
-		metadata.setSize(size);
+	public KatouFile(String name, String hash, long size) throws IOException {
+		this(new KatouMetadata().setName(name).setSize(size).setHash(hash));
+	}
 
-
-		try{
-			this.file = new RandomAccessFile(path.toFile(), "rw");
-		} catch (FileNotFoundException e){
-			KatouClient.LOGGER.log(Level.SEVERE, "Failed to create new file for KatouFile@" + path + "!");
-		}
+	public KatouFile(KatouMetadata metadata) throws IOException {
+		path = Paths.get(Configuration.getNode("defaultSaveLocation"), metadata.getName());
+		file = new RandomAccessFile(path.toFile(), "rw");
+		this.metadata = metadata;
 	}
 
 
-	public Path getPath(){
+	public Path getSavePath(){
 		return path;
-	}
-
-	public String getName(){
-		return name;
-	}
-
-	public long getSize(){
-		return size;
 	}
 
 	public void flushMemoryChunk(int id) throws IOException {
@@ -75,7 +62,11 @@ public class KatouFile {
 
 	@Override
 	public boolean equals(Object other){
-		return this == other;
+		if(!(other instanceof KatouFile)){
+			return false;
+		}
+
+		return metadata.equals(((KatouFile)other).metadata);
 	}
 
 }
