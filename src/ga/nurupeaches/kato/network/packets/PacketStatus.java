@@ -5,6 +5,7 @@ import ga.nurupeaches.kato.utils.PacketUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Represents a packet that notifies others of a KatouMetadata
@@ -41,6 +42,15 @@ public class PacketStatus extends Packet {
 		PacketUtils.writeString(metadata.getName(), buffer);
 		PacketUtils.writeString(metadata.getHash(), buffer);
 		buffer.putLong(metadata.getSize());
+	}
+
+	@Override
+	public int size(){
+		int size = 0;
+		size += metadata.getName().getBytes(StandardCharsets.UTF_8).length;
+		size += metadata.getHash().getBytes(StandardCharsets.UTF_8).length;
+		size += Long.BYTES;
+		return size;
 	}
 
 }

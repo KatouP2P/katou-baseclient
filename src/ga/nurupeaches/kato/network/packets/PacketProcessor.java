@@ -5,9 +5,16 @@ import ga.nurupeaches.kato.network.KatouMetadata;
 import ga.nurupeaches.kato.network.Peer;
 import ga.nurupeaches.kato.network.protocol.Protocol;
 
+import java.io.IOException;
+
 public class PacketProcessor {
 
-	public static void process(Packet packet){
+	/**
+	 * Processes an incoming packet based on it's type.
+	 * @param packet The packet to process
+	 * @throws IOException If the packet was related to an I/O operation.
+	 */
+	public static void process(Packet packet) throws IOException {
 		// TODO: Find alternative to if-then-else statements
 		Peer peer = Protocol.PROTOCOL.getPeer(packet.getOrigin());
 
@@ -16,10 +23,12 @@ public class PacketProcessor {
 			return;
 		}
 
-		if(packet instanceof PacketStatus){
+		if(packet instanceof PacketVersion){
+			peer.setVersion(((PacketVersion)packet).getVersion());
+		} else if(packet instanceof PacketStatus){
 			KatouMetadata metadata = ((PacketStatus)packet).getMetadata();
 			if(!peer.hasFile(metadata)){
-				KatouFile file = new KatouFile(metadata);
+				peer.registerFile(new KatouFile(metadata));
 			}
 		}
 

@@ -1,9 +1,7 @@
 package ga.nurupeaches.kato.network.manager.tcp;
 
 import ga.nurupeaches.kato.KatouClient;
-import ga.nurupeaches.kato.network.Peer;
 import ga.nurupeaches.kato.network.manager.NetworkManager;
-import ga.nurupeaches.kato.network.packets.Packet;
 import ga.nurupeaches.kato.network.protocol.Protocol;
 
 import java.io.IOException;
@@ -12,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -45,38 +42,35 @@ public class TCPNetworkManager implements NetworkManager {
 		// Don't process null connections!
 		if(newConnection != null){
 			KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + newConnection.getRemoteAddress());
-
-			// Read it in a raw way; there's no point in creating a new ByteBuffer for just one integer.
-			int size = newConnection.socket().getInputStream().read();
-
-			// Initialize a buffer to retrieve the length of the version name.
-			ByteBuffer buffer = ByteBuffer.allocate(size);
-			newConnection.read(buffer);
-
-			Peer peer = Protocol.PROTOCOL.registerPeer(newConnection);
-			// Finally, convert the bytes from the buffer to a string and give it to the new peer.
-			peer.setVersion(new String(buffer.array(), StandardCharsets.UTF_8));
-
+			Protocol.PROTOCOL.registerPeer(newConnection);
 			// TODO: Call event saying a new peer has connected.
 		}
 	}
 
 	public void peerTick() {
-		Protocol.PROTOCOL.getConnectedPeers().values().parallelStream().forEach((peer) -> {
+		Protocol.PROTOCOL.getConnectedPeers().values().forEach((peer) -> {
 
 			if(peer.getChannel() instanceof SocketChannel){
 				SocketChannel channel = (SocketChannel)peer.getChannel();
+
 				try{
 					ByteBuffer buffer = peer.getBuffer();
-					channel.read(buffer);
+					if(channel.read(buffer) == 128){
+//						return;
+					}
 
-					Packet packet = Packet.convertPacket(buffer.get());
-					packet.setOrigin(channel.getRemoteAddress());
-					packet.read(buffer);
+					String str = new String(buffer.array()).trim();
+					if(!str.isEmpty()){
+						System.out.println(str);
+					}
 
-					// TODO: Process packet data
+//					Packet packet = Packet.convertPacket(buffer.get());
+//					packet.setOrigin(channel.getRemoteAddress());
+//					packet.read(buffer);
+//
+//					PacketProcessor.process(packet);
 
-					buffer.clear();
+//					buffer.clear();
 				} catch (IOException e) {
 					KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle peer", e);
 				}

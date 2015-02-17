@@ -37,17 +37,11 @@ public interface Protocol {
 	}
 
 	/**
-	 * Sends a message to a peer.
+	 * Sends a packet to a peer.
 	 * @param peer The desired peer
-	 * @param message The message we want to send.
+	 * @param packet The packet we want to send.
 	 */
-	public void sendPeerMessage(Peer peer, Message message);
-
-	/**
-	 * Parses a peer message (packet).
-	 * @param packet The message to process.
-	 */
-	public void parsePeerMessage(Packet packet);
+	public void sendPeerPacket(Peer peer, Packet packet) throws IOException;
 
 	/**
 	 * Retrieves a peer based on the given address.

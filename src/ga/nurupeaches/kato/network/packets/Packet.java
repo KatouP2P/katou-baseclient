@@ -15,12 +15,17 @@ public abstract class Packet {
 	/**
 	 * An ID lookup field; uses bytes.
 	 */
-	public static final Map<Byte, Class<? extends Packet>> ID_LOOKUP = new HashMap<>();
+	private static final Map<Byte, Class<? extends Packet>> ID_LOOKUP = new HashMap<>();
 
 	/**
 	 * The origin of the packet.
 	 */
 	private SocketAddress origin;
+
+	/**
+	 * The ID of the packet. Filled in by convertPacket(byte).
+	 */
+	private byte id;
 
 	/**
 	 * Register the packets related to Katou. You could register your own packets if you want.
@@ -35,9 +40,11 @@ public abstract class Packet {
 	 * @return A new packet from the buffer. Does not fill the packet with information and increments the buffer.
 	 */
 	public static Packet convertPacket(byte id){
-		Class<? extends Packet> packet = ID_LOOKUP.get(id);
+		Class<? extends Packet> packetClass = ID_LOOKUP.get(id);
 		try{
-			return (Packet)UnsafeUtils.getUnsafe().allocateInstance(packet);
+			Packet packet = (Packet)UnsafeUtils.getUnsafe().allocateInstance(packetClass);
+			packet.id = id;
+			return packet;
 		} catch (InstantiationException e){
 			// Theoretically, this should only happen if the user is running anything but OpenJDK or Oracle's JRE/JDK.
 			// TODO: Support other JVMs.
@@ -59,6 +66,20 @@ public abstract class Packet {
 	public SocketAddress getOrigin(){
 		return origin;
 	}
+
+	/**
+	 * Returns the packet's ID
+	 * @return The ID (byte)
+	 */
+	public byte getID(){
+		return id;
+	}
+
+	/**
+	 * Returns the size of the packet.
+	 * @return The size of the packet.
+	 */
+	public abstract int size();
 
 	/**
 	 * Reads data from the given buffer.
