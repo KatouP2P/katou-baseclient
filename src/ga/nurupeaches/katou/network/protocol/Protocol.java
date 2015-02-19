@@ -1,6 +1,7 @@
 package ga.nurupeaches.katou.network.protocol;
 
 import ga.nurupeaches.katou.network.Peer;
+import ga.nurupeaches.katou.network.manager.ChannelWrapper;
 import ga.nurupeaches.katou.network.packets.Packet;
 
 import java.io.IOException;
@@ -26,9 +27,9 @@ public interface Protocol {
 	 * @param channel The channel of the peer
 	 * @return The peer object
 	 */
-	public default Peer registerPeer(SocketChannel channel) throws IOException {
+	public default Peer registerPeer(ChannelWrapper channel) throws IOException {
 		Peer peer = new Peer(channel);
-		getConnectedPeers().put(channel.getRemoteAddress(), peer);
+		getConnectedPeers().put(channel.getAddress(), peer);
 		return peer;
 	}
 

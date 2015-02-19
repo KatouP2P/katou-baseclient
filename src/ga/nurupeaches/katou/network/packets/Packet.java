@@ -45,6 +45,7 @@ public abstract class Packet {
 		if(packetClass == null){
 			throw new IllegalArgumentException("Invalid ID#" + id);
 		}
+
 		try{
 			Packet packet = (Packet)UnsafeUtils.getUnsafe().allocateInstance(packetClass);
 			packet.id = id;

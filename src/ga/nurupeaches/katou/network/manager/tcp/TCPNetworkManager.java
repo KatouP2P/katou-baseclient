@@ -8,10 +8,12 @@ import ga.nurupeaches.katou.network.packets.PacketProcessor;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
-import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -19,10 +21,10 @@ import java.util.logging.Level;
 public class TCPNetworkManager implements NetworkManager {
 
 	private final AtomicBoolean CLOSE_REQUESTED = new AtomicBoolean(false);
-	private ServerSocketChannel channel;
+	private AsynchronousServerSocketChannel channel;
 
 	public TCPNetworkManager(int port) throws IOException {
-		channel = ServerSocketChannel.open();
+		channel = AsynchronousServerSocketChannel.open();
 		channel.bind(new InetSocketAddress(port));
 	}
 
@@ -39,13 +41,11 @@ public class TCPNetworkManager implements NetworkManager {
 		}
 	}
 
-	public void handleNewConnection(SocketChannel newConnection) throws IOException {
-		// Don't process null connections!
-		if(newConnection != null){
-			KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + newConnection.getRemoteAddress() + ".");
-			KatouClient.getProtocol().registerPeer(newConnection);
-			// TODO: Call event saying a new peer has connected.
-		}
+	public void handleNewConnection(Future<AsynchronousSocketChannel> futureConnection) throws IOException, InterruptedException, ExecutionException {
+		AsynchronousSocketChannel conn = futureConnection.get();
+		KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + conn.getRemoteAddress() + ".");
+		KatouClient.getProtocol().registerPeer(conn);
+		// TODO: Call event saying a new peer has connected.
 	}
 
 	public void peerTick() {
@@ -58,8 +58,6 @@ public class TCPNetworkManager implements NetworkManager {
 					ByteBuffer buffer = peer.getBuffer();
 					buffer.clear();
 					int readBytes = channel.read(buffer);
-					System.out.println(readBytes);
-					System.out.println(Arrays.toString(buffer.array()));
 					if(readBytes == 0){
 						return;
 					}

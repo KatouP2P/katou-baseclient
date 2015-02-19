@@ -1,20 +1,19 @@
 package ga.nurupeaches.katou.network;
 
+import ga.nurupeaches.katou.network.manager.ChannelWrapper;
 import ga.nurupeaches.katou.network.manager.NetworkManager;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
-import java.nio.channels.NetworkChannel;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Represents a peer.
  */
-public class Peer<T extends ByteChannel & NetworkChannel> {
+public class Peer {
 
 	private final ByteBuffer buffer = ByteBuffer.allocate(NetworkManager.DEFAULT_BUFFER_SIZE);
-	private final T channel;
+	private final ChannelWrapper channel;
 	private List<KatouFile> files = new ArrayList<>();
 	private String version;
 	private int nextBlock;
@@ -23,7 +22,7 @@ public class Peer<T extends ByteChannel & NetworkChannel> {
 	 * Constructs a peer with the given channel.
 	 * @param channel The channel of the peer.
 	 */
-	public Peer(T channel){
+	public Peer(ChannelWrapper channel){
 		this.channel = channel;
 	}
 
@@ -43,7 +42,7 @@ public class Peer<T extends ByteChannel & NetworkChannel> {
 		return nextBlock;
 	}
 
-	public T getChannel(){
+	public ChannelWrapper getChannel(){
 		return channel;
 	}
 
