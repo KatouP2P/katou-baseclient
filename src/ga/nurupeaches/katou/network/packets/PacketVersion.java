@@ -31,7 +31,7 @@ public class PacketVersion extends Packet {
 
 	@Override
 	public int size(){
-		return version.getBytes(StandardCharsets.UTF_8).length;
+		return version.getBytes(StandardCharsets.UTF_8).length + Integer.BYTES;
 	}
 
 }

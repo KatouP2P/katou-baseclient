@@ -25,8 +25,9 @@ public class PacketUtils {
 	 * @param buffer The buffer to write into
 	 */
 	public static void writeString(String string, ByteBuffer buffer){
-		buffer.putInt(string.length());
-		buffer.put(string.getBytes(StandardCharsets.UTF_8));
+		byte[] stringBytes = string.getBytes(StandardCharsets.UTF_8);
+		buffer.putInt(stringBytes.length);
+		buffer.put(stringBytes);
 	}
 
 }

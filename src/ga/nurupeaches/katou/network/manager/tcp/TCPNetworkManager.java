@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -22,7 +23,6 @@ public class TCPNetworkManager implements NetworkManager {
 
 	public TCPNetworkManager(int port) throws IOException {
 		channel = ServerSocketChannel.open();
-		channel.configureBlocking(false);
 		channel.bind(new InetSocketAddress(port));
 	}
 
@@ -30,7 +30,7 @@ public class TCPNetworkManager implements NetworkManager {
 	public void tick() {
 		if(!CLOSE_REQUESTED.get()){
 			try{
-				// Accepts any new connection. Doesn't block.
+				// Accepts any new connection. Blocks.
 				handleNewConnection(channel.accept());
 				peerTick();
 			} catch (IOException e) {
@@ -42,9 +42,7 @@ public class TCPNetworkManager implements NetworkManager {
 	public void handleNewConnection(SocketChannel newConnection) throws IOException {
 		// Don't process null connections!
 		if(newConnection != null){
-			KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + newConnection.getRemoteAddress() + ". Setting to non-blocking.");
-			newConnection.configureBlocking(false);
-			KatouClient.LOGGER.log(Level.INFO, "Set TCP connection from " + newConnection.getRemoteAddress() + " to non-blocking.");
+			KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + newConnection.getRemoteAddress() + ".");
 			KatouClient.getProtocol().registerPeer(newConnection);
 			// TODO: Call event saying a new peer has connected.
 		}
@@ -58,11 +56,13 @@ public class TCPNetworkManager implements NetworkManager {
 
 				try{
 					ByteBuffer buffer = peer.getBuffer();
+					buffer.clear();
 					int readBytes = channel.read(buffer);
+					System.out.println(readBytes);
+					System.out.println(Arrays.toString(buffer.array()));
 					if(readBytes == 0){
 						return;
 					}
-					System.out.println(readBytes);
 
 					Packet packet = Packet.convertPacket(buffer.get());
 					packet.setOrigin(channel.getRemoteAddress());
