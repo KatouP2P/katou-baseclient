@@ -14,6 +14,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -52,13 +53,17 @@ public class TCPNetworkManager implements NetworkManager {
 	}
 
 	public void peerTick() {
+		System.out.println("peer tick");
 		Iterator<Peer> peers = KatouClient.getProtocol().getConnectedPeers().values().iterator();
 		while(peers.hasNext()){
+			System.out.println("had next");
 			Peer peer = peers.next();
 
 			if(peer.getSocket().getType() == SocketType.TCP){
+				System.out.println("peer had tcp");
 				Socket socket = (Socket)peer.getSocket().getRawSocket();
 				if(socket.isClosed()){
+					System.out.println("closed");
 					// Remove dead/closed connections from the connected peers list.
 					peers.remove();
 				}
@@ -69,19 +74,24 @@ public class TCPNetworkManager implements NetworkManager {
 
 					// Attempt at "non-blocking" reading.
 					int available = stream.available();
+					System.out.println("available: " + available);
 					if(available != 0){
 						byte[] buffer = new byte[available];
 						int read = stream.read(buffer);
+
+						System.out.println(Arrays.toString(buffer));
 
 						if(read != available){
 							KatouClient.LOGGER.log(Level.WARNING, "Read bytes didn't match available bytes");
 						}
 
+						System.out.println("creating");
 						ByteBuffer wrapper = ByteBuffer.wrap(buffer); // Create a heap-based buffer.
 						Packet packet = Packet.convertPacket(wrapper.get());
 						packet.setOrigin(socket.getRemoteSocketAddress());
 						packet.read(wrapper);
 
+						System.out.println("proc");
 						PacketProcessor.process(packet);
 					}
 				} catch (IOException e){

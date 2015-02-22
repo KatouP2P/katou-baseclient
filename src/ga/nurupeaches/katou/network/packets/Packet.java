@@ -10,12 +10,10 @@ import java.util.Map;
 
 public abstract class Packet {
 
-	public static int DEFAULT_BUFFER_SIZE = 1024;
-
 	/**
 	 * An ID lookup field; uses bytes.
 	 */
-	private static final Map<Byte, Class<? extends Packet>> ID_LOOKUP = new HashMap<Byte, Class<? extends Packet>>();
+	private static final HashBimap<Byte, Class<? extends Packet>> ID_LOOKUP = new HashBimap<Byte, Class<? extends Packet>>();
 
 	/**
 	 * The origin of the packet.
@@ -23,15 +21,11 @@ public abstract class Packet {
 	private SocketAddress origin;
 
 	/**
-	 * The ID of the packet. Filled in by convertPacket(byte).
-	 */
-	private byte id;
-
-	/**
 	 * Register the packets related to Katou. You could register your own packets if you want.
 	 */
 	static {
-		ID_LOOKUP.put((byte) 0x01, PacketStatus.class);
+		ID_LOOKUP.put((byte) 0x01, PacketVersion.class);
+		ID_LOOKUP.put((byte) 0x02, PacketStatus.class);
 	}
 
 	/**
@@ -41,14 +35,14 @@ public abstract class Packet {
 	 * @throws IllegalArgumentException If a class was not found by the ID.
 	 */
 	public static Packet convertPacket(byte id){
-		Class<? extends Packet> packetClass = ID_LOOKUP.get(id);
+		Class<? extends Packet> packetClass = ID_LOOKUP.getByKey(id);
 		if(packetClass == null){
 			throw new IllegalArgumentException("Invalid ID#" + id);
 		}
 
 		try{
 			Packet packet = (Packet)UnsafeUtils.getUnsafe().allocateInstance(packetClass);
-			packet.id = id;
+			packet.init();
 			return packet;
 		} catch (InstantiationException e){
 			// Theoretically, this should only happen if the user is running anything but OpenJDK or Oracle's JRE/JDK.
@@ -77,8 +71,13 @@ public abstract class Packet {
 	 * @return The ID (byte)
 	 */
 	public byte getID(){
-		return id;
+		return ID_LOOKUP.getByValue(getClass());
 	}
+
+	/**
+	 * Initializes the packet after creation without parameters..
+	 */
+	public abstract void init();
 
 	/**
 	 * Returns the size of the packet.
@@ -97,5 +96,40 @@ public abstract class Packet {
 	 * @param buffer Buffer to write to.
 	 */
 	public abstract void write(ByteBuffer buffer) throws IOException;
+
+
+	private static class HashBimap<K, V> {
+
+		private Map<K, V> keyToValue = new HashMap<K, V>();
+		private Map<V, K> valueToKey = new HashMap<V, K>();
+
+		public void put(K key, V value){
+			keyToValue.put(key, value);
+			valueToKey.put(value, key);
+		}
+
+		public V getByKey(K key){
+			return keyToValue.get(key);
+		}
+
+		public K getByValue(V value){
+			return valueToKey.get(value);
+		}
+
+		public boolean containsKey(K key){
+			return keyToValue.containsKey(key);
+		}
+
+		public boolean containsValue(V value){
+			return valueToKey.containsKey(value);
+		}
+
+		@Override
+		public String toString(){
+			return keyToValue.toString() + ";" + valueToKey.toString();
+
+		}
+
+	}
 
 }

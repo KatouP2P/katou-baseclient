@@ -13,7 +13,10 @@ public class PacketVersion extends Packet {
 		this.version = version;
 	}
 
-	public PacketVersion(){}
+	@Override
+	public void init() {
+		version = "";
+	}
 
 	public String getVersion(){
 		return version;

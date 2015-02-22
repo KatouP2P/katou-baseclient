@@ -1,8 +1,11 @@
 package ga.nurupeaches.katou.network.manager;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +24,11 @@ public class SocketWrapper {
 	private final Object socket;
 
 	/**
+	 * Specific to DatagramSockets.
+	 */
+	private DatagramPacket outgoingPacket;
+
+	/**
 	 * Constructs a SocketWrapper with a supported socket type
 	 * @param socket The socket; must be a supported socket type
 	 * @throws IllegalArgumentException If the socket was not a supported socket type
@@ -32,6 +40,10 @@ public class SocketWrapper {
 		}
 
 		this.socket = socket;
+
+		if(socket instanceof DatagramSocket){
+			outgoingPacket = new DatagramPacket(new byte[0], 0);
+		}
 	}
 
 	/**
@@ -50,6 +62,10 @@ public class SocketWrapper {
 		}
 	}
 
+	/**
+	 * Returns the type of socket we rely inside the wrapper.
+	 * @return TCP, UDP, or UNKNOWN.
+	 */
 	public SocketType getType(){
 		if(socket instanceof Socket){
 			return SocketType.TCP;
@@ -60,8 +76,33 @@ public class SocketWrapper {
 		}
 	}
 
+	/**
+	 * Returns the raw socket as an Object.
+	 * @return An Object representation of the socket.
+	 */
 	public Object getRawSocket(){
 		return socket;
+	}
+
+	/**
+	 * Writes a ByteBuffer to the socket.
+	 * @param buffer The buffer to write
+	 * @throws IOException If the operation failed for whatever reason.
+	 */
+	public void write(ByteBuffer buffer) throws IOException {
+		if(socket instanceof Socket){
+			((Socket)socket).getOutputStream().write(buffer.array());
+		} else if(socket instanceof DatagramSocket){
+			DatagramSocket datagramSocket = (DatagramSocket)socket;
+			// Be careful; we create a new DatagramSocket that may have not been connected for some reason.
+			if(!datagramSocket.isConnected()){
+				throw new IllegalStateException("Socket isn't connected!");
+			}
+
+			outgoingPacket.setData(buffer.array());
+			outgoingPacket.setLength(buffer.array().length);
+			datagramSocket.send(outgoingPacket);
+		}
 	}
 
 }

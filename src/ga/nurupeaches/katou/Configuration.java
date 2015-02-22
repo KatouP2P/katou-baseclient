@@ -31,7 +31,7 @@ public class Configuration {
 	/**
 	 * Loads the default
 	 */
-	private static void loadConfig(){
+	public static void loadConfig(){
 		loadConfig(new File("katou.config"));
 	}
 
@@ -39,7 +39,7 @@ public class Configuration {
 	 * Loads the configuration file.
 	 * @param config - The configuration file to load.
 	 */
-	private static void loadConfig(File config){
+	public static void loadConfig(File config){
 		SETTINGS.clear(); // Flush out the old settings.
 
 		if(!config.exists()){
@@ -92,7 +92,7 @@ public class Configuration {
 	/**
 	 * Loads the default settings.
 	 */
-	private static void loadDefaults(){
+	public static void loadDefaults(){
 		putIfAbsent(SETTINGS, "Port", 6800);
 		putIfAbsent(SETTINGS, "SocketType", SocketType.TCP);
 		putIfAbsent(SETTINGS, "CharacterSet", Charset.forName("UTF-8"));

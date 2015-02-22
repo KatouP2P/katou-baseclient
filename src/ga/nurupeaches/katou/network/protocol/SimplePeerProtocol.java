@@ -36,16 +36,11 @@ public class SimplePeerProtocol implements Protocol {
 
 	@Override
 	public void sendPeerPacket(Peer peer, Packet packet) throws IOException {
-		Object channel = peer.getSocket().getRawSocket();
 		ByteBuffer buffer = ByteBuffer.allocate(packet.size() + 1); // + 1 for the ID
 		buffer.put(packet.getID());
 		packet.write(buffer);
 		buffer.flip();
-
-		//TODO: Re-implement this entire method to match the getRawSocket() method.
-//		while(buffer.hasRemaining()){
-//			channel.write(buffer);
-//		}
+		peer.getSocket().write(buffer);
 	}
 	
 	@Override

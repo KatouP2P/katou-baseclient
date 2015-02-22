@@ -18,7 +18,8 @@ public class PacketStatus extends Packet {
 		this.metadata = metadata;
 	}
 
-	public PacketStatus() {
+	@Override
+	public void init() {
 		metadata = new KatouMetadata();
 	}
 
