@@ -28,9 +28,9 @@ public class SimplePeerProtocol implements Protocol {
 	}
 
 	@Override
-	public Peer registerPeer(SocketWrapper channel){
-		Peer peer = new Peer(channel);
-		getConnectedPeers().put(channel.getAddress(), peer);
+	public Peer registerPeer(SocketWrapper socket){
+		Peer peer = new Peer(socket);
+		getConnectedPeers().put(socket.getAddress(), peer);
 		return peer;
 	}
 

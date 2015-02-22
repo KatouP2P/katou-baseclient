@@ -28,7 +28,7 @@ public class SocketWrapper {
 	public SocketWrapper(Object socket){
 		if(!SUPPORTED_CLASSES.contains(socket.getClass())){
 			throw new IllegalArgumentException("Not supported: " + socket.getClass() + ". " +
-					"ChannelWrapper only supports: " + Arrays.toString(SUPPORTED_CLASSES.toArray()));
+					"SocketWrapper only supports: " + Arrays.toString(SUPPORTED_CLASSES.toArray()));
 		}
 
 		this.socket = socket;
@@ -46,7 +46,7 @@ public class SocketWrapper {
 		} else if(socket instanceof Socket){
 			return ((Socket)socket).getRemoteSocketAddress();
 		} else {
-			throw new IllegalStateException("The given channel was " + socket.getClass().getName() + ", which is not supported!");
+			throw new IllegalStateException("The given socket was " + socket.getClass().getName() + ", which is not supported!");
 		}
 	}
 

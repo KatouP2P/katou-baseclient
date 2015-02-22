@@ -22,11 +22,11 @@ import java.util.logging.Level;
 public class TCPNetworkManager implements NetworkManager {
 
 	private final AtomicBoolean CLOSE_REQUESTED = new AtomicBoolean(false);
-	private ServerSocket serverChannel;
+	private ServerSocket serverSocket;
 
 	public TCPNetworkManager(int port) throws IOException {
-		serverChannel = new ServerSocket();
-		serverChannel.bind(new InetSocketAddress(port));
+		serverSocket = new ServerSocket();
+		serverSocket.bind(new InetSocketAddress(port));
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class TCPNetworkManager implements NetworkManager {
 		if(!CLOSE_REQUESTED.get()){
 			try{
 				// Accepts any new connection. Blocks.
-				handleNewConnection(serverChannel.accept());
+				handleNewConnection(serverSocket.accept());
 				peerTick();
 			} catch (IOException e) {
 				KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle connection!", e);

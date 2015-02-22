@@ -22,11 +22,11 @@ public interface Protocol {
 	public Map<SocketAddress, Peer> getConnectedPeers();
 
 	/**
-	 * Registers a peer with the given SocketChannel
-	 * @param channel The channel of the peer
+	 * Registers a peer with the given SocketWrapper
+	 * @param socket The socket of the peer
 	 * @return The peer object
 	 */
-	public Peer registerPeer(SocketWrapper channel);
+	public Peer registerPeer(SocketWrapper socket);
 
 	/**
 	 * Sends a packet to a peer.
