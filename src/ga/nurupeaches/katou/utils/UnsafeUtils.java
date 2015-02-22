@@ -16,7 +16,9 @@ public class UnsafeUtils {
 				Field field = Unsafe.class.getDeclaredField("theUnsafe");
 				field.setAccessible(true);
 				ourUnsafe = (Unsafe)field.get(null);
-			} catch (ReflectiveOperationException e){
+			} catch (NoSuchFieldException e){
+				KatouClient.LOGGER.log(Level.SEVERE, "Failed to obtain an instance of the Unsafe!", e);
+			} catch (IllegalAccessException e){
 				KatouClient.LOGGER.log(Level.SEVERE, "Failed to obtain an instance of the Unsafe!", e);
 			}
 		}

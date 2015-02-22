@@ -1,9 +1,9 @@
 package ga.nurupeaches.katou.network.packets;
 
+import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.utils.PacketUtils;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 public class PacketVersion extends Packet {
 
@@ -31,7 +31,7 @@ public class PacketVersion extends Packet {
 
 	@Override
 	public int size(){
-		return version.getBytes(StandardCharsets.UTF_8).length + Integer.BYTES;
+		return version.getBytes(Configuration.getCharset()).length + 4;
 	}
 
 }

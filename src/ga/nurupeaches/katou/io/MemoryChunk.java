@@ -1,9 +1,9 @@
 package ga.nurupeaches.katou.io;
 
+import ga.nurupeaches.katou.network.Peer;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.zip.CRC32;
 
 /**
@@ -39,7 +39,7 @@ public class MemoryChunk implements TransferableChunk {
 	public MemoryChunk(int id, int size, long chunkStart){
 		this.id = id;
 		this.chunkSize = size;
-		this.buffer = ByteBuffer.allocateDirect(size);
+		this.buffer = ByteBuffer.allocateDirect(size); // Direct buffers are more efficient at I/O.
 		this.chunkStart = chunkStart;
 	}
 
@@ -70,19 +70,20 @@ public class MemoryChunk implements TransferableChunk {
 	}
 
 	@Override
-	public void transferFromPeer(ReadableByteChannel channel) throws IOException {
-		channel.read(buffer);
+	public void transferFromPeer(Peer peer) throws IOException {
+
 	}
 
 	@Override
-	public void transferToPeer(WritableByteChannel channel) throws IOException {
-		channel.write(buffer);
+	public void transferToPeer(Peer peer) throws IOException {
+
 	}
 
 	@Override
 	public boolean validate(long crc32){
 		CRC32 checksum = new CRC32();
-		checksum.update(buffer);
+		// THIS WILL ERROR: TODO: DO SOMETHING
+		checksum.update(buffer.array());
 		return checksum.getValue() == crc32;
 	}
 

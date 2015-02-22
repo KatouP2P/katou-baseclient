@@ -1,7 +1,8 @@
 package ga.nurupeaches.katou.utils;
 
+import ga.nurupeaches.katou.Configuration;
+
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Basic utility class for manipulating data in or for Packets
@@ -16,7 +17,7 @@ public class PacketUtils {
 	public static String readString(ByteBuffer buffer){
 		byte[] stringBytes = new byte[buffer.getInt()];
 		buffer.get(stringBytes);
-		return new String(stringBytes, StandardCharsets.UTF_8);
+		return new String(stringBytes, Configuration.getCharset());
 	}
 
 	/**
@@ -25,7 +26,7 @@ public class PacketUtils {
 	 * @param buffer The buffer to write into
 	 */
 	public static void writeString(String string, ByteBuffer buffer){
-		byte[] stringBytes = string.getBytes(StandardCharsets.UTF_8);
+		byte[] stringBytes = string.getBytes(Configuration.getCharset());
 		buffer.putInt(stringBytes.length);
 		buffer.put(stringBytes);
 	}

@@ -1,12 +1,11 @@
 package ga.nurupeaches.katou.utils;
 
+import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.KatouClient;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,30 +40,42 @@ public class HashUtils {
 	 * @return The digest in a byte array
 	 */
 	public static byte[] computeHash(String string){
-		return computeHash(string.getBytes(StandardCharsets.UTF_8));
+		return computeHash(string.getBytes(Configuration.getCharset()));
 	}
 
 	/**
 	 * Computes a hash for a path (uses streams as opposed to in-memory byte arrays).
-	 * @param path Path (file) to compute
+	 * @param file Path (file) to compute
 	 * @return The digest in a byte array.
 	 */
-	public static byte[] computeHash(Path path){
+	public static byte[] computeHash(File file){
 		DigestInputStream digestingStream = null;
-		try(InputStream fileStream = Files.newInputStream(path)){
-			digestingStream = new DigestInputStream(fileStream, DIGEST);
+		FileInputStream stream = null;
+
+		try {
+			stream = new FileInputStream(file);
+			digestingStream = new DigestInputStream(stream, DIGEST);
 			while(digestingStream.read() != -1);
 			return DIGEST.digest();
 		} catch (IOException e){
-			KatouClient.LOGGER.log(Level.WARNING, "Failed to calculate hash for file " + path, e);
+			KatouClient.LOGGER.log(Level.WARNING, "Failed to calculate hash for file " + file, e);
 			return new byte[0];
 		} finally {
 			DIGEST.reset();
+
 			if(digestingStream != null){
 				try{
 					digestingStream.close();
 				} catch (IOException e){
 					KatouClient.LOGGER.log(Level.WARNING, "Failed to close digest stream! We're leaking resources!", e);
+				}
+			}
+
+			if(stream != null){
+				try{
+					stream.close();
+				} catch (IOException e){
+					KatouClient.LOGGER.log(Level.WARNING, "Failed to close file stream! We're leaking resources!", e);
 				}
 			}
 		}

@@ -1,6 +1,6 @@
 package ga.nurupeaches.katou.network;
 
-import ga.nurupeaches.katou.network.manager.ChannelWrapper;
+import ga.nurupeaches.katou.network.manager.SocketWrapper;
 import ga.nurupeaches.katou.network.manager.NetworkManager;
 
 import java.nio.ByteBuffer;
@@ -13,17 +13,17 @@ import java.util.List;
 public class Peer {
 
 	private final ByteBuffer buffer = ByteBuffer.allocate(NetworkManager.DEFAULT_BUFFER_SIZE);
-	private final ChannelWrapper channel;
-	private List<KatouFile> files = new ArrayList<>();
+	private final SocketWrapper socket;
+	private List<KatouFile> files = new ArrayList<KatouFile>();
 	private String version;
 	private int nextBlock;
 
 	/**
-	 * Constructs a peer with the given channel.
-	 * @param channel The channel of the peer.
+	 * Constructs a peer with the given socket.
+	 * @param socket The socket of the peer.
 	 */
-	public Peer(ChannelWrapper channel){
-		this.channel = channel;
+	public Peer(SocketWrapper socket){
+		this.socket = socket;
 	}
 
 	public void registerFile(KatouFile file){
@@ -42,8 +42,8 @@ public class Peer {
 		return nextBlock;
 	}
 
-	public ChannelWrapper getChannel(){
-		return channel;
+	public SocketWrapper getSocket(){
+		return socket;
 	}
 
 	public String getVersion(){
@@ -60,7 +60,7 @@ public class Peer {
 
 	@Override
 	public boolean equals(Object other){
-		return other instanceof Peer && ((Peer)other).channel.equals(channel);
+		return other instanceof Peer && ((Peer)other).socket.equals(socket);
 	}
 
 }

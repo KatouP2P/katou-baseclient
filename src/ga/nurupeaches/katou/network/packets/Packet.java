@@ -15,7 +15,7 @@ public abstract class Packet {
 	/**
 	 * An ID lookup field; uses bytes.
 	 */
-	private static final Map<Byte, Class<? extends Packet>> ID_LOOKUP = new HashMap<>();
+	private static final Map<Byte, Class<? extends Packet>> ID_LOOKUP = new HashMap<Byte, Class<? extends Packet>>();
 
 	/**
 	 * The origin of the packet.

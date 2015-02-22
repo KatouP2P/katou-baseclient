@@ -1,16 +1,13 @@
 package ga.nurupeaches.katou.network;
 
-import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.io.Chunk;
 import ga.nurupeaches.katou.io.MemoryChunk;
 import ga.nurupeaches.katou.utils.HashUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,18 +16,18 @@ import java.util.Map;
  */
 public class KatouFile {
 
-	private Map<Integer, Chunk> fileChunks = new HashMap<>();
-	private RandomAccessFile file;
-	private Path path;
+	private Map<Integer, Chunk> fileChunks = new HashMap<Integer, Chunk>();
+	private RandomAccessFile randomAccessFile;
+	private File file;
 	private KatouMetadata metadata;
 
 	/**
 	 * Constructs a KatouFile based on an existed file.
-	 * @param path
+	 * @param file
 	 * @throws IOException
 	 */
-	public KatouFile(Path path) throws IOException {
-		this(path.getFileName().toString(), HashUtils.hexifyArray(HashUtils.computeHash(path)), Files.size(path));
+	public KatouFile(File file) throws IOException {
+		this(file.getName(), HashUtils.hexifyArray(HashUtils.computeHash(file)), file.length());
 	}
 
 	/**
@@ -50,16 +47,17 @@ public class KatouFile {
 	 * @throws IOException
 	 */
 	public KatouFile(KatouMetadata metadata) throws IOException {
-		path = Paths.get(Configuration.getNode("defaultSaveLocation"), metadata.getName());
-		file = new RandomAccessFile(path.toFile(), "rw");
+		//TODO: Re-implement getNode(String)
+		file = new File(/*Configuration.getNode("defaultSaveLocation")*/"", metadata.getName());
+		randomAccessFile = new RandomAccessFile(file, "rw");
 		this.metadata = metadata;
 	}
 
 	/**
 	 * Returns the save path for this file.
 	 */
-	public Path getSavePath(){
-		return path;
+	public File getSavePath(){
+		return file;
 	}
 
 	/**
@@ -74,7 +72,7 @@ public class KatouFile {
 		}
 
 		ByteBuffer buffer = ((MemoryChunk)chunk).getBuffer();
-		file.getChannel().write(buffer, chunk.getPosition());
+		randomAccessFile.getChannel().write(buffer, chunk.getPosition());
 	}
 
 	@Override

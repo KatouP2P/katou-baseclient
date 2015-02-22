@@ -1,6 +1,7 @@
 package ga.nurupeaches.katou;
 
 import ga.nurupeaches.katou.network.manager.NetworkManager;
+import ga.nurupeaches.katou.network.manager.SocketType;
 import ga.nurupeaches.katou.network.manager.tcp.TCPNetworkManager;
 import ga.nurupeaches.katou.network.manager.udp.UDPNetworkManager;
 import ga.nurupeaches.katou.network.protocol.Protocol;
@@ -58,17 +59,15 @@ public class KatouClient {
 	 */
 	public void initializeNetworking() throws IOException {
 		if(networkManager == null){
-			String networkType = Configuration.getNode("NetworkType");
-			int port = Configuration.getNode("Port") != null ? Integer.parseInt(Configuration.getNode("Port")) : DEFAULT_PORT;
+			SocketType networkType = Configuration.getSocketType();
+			int port = Configuration.getPort();
 
 			switch(networkType){
-				case "tcp":
-				case "TCP":
+				case TCP:
 					networkManager = new TCPNetworkManager(port);
 					break;
 
-				case "udp":
-				case "UDP":
+				case UDP:
 					networkManager = new UDPNetworkManager(port);
 					break;
 			}

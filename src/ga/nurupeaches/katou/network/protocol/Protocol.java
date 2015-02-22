@@ -1,12 +1,11 @@
 package ga.nurupeaches.katou.network.protocol;
 
 import ga.nurupeaches.katou.network.Peer;
-import ga.nurupeaches.katou.network.manager.ChannelWrapper;
+import ga.nurupeaches.katou.network.manager.SocketWrapper;
 import ga.nurupeaches.katou.network.packets.Packet;
 
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.Map;
 
 /**
@@ -27,11 +26,7 @@ public interface Protocol {
 	 * @param channel The channel of the peer
 	 * @return The peer object
 	 */
-	public default Peer registerPeer(ChannelWrapper channel) throws IOException {
-		Peer peer = new Peer(channel);
-		getConnectedPeers().put(channel.getAddress(), peer);
-		return peer;
-	}
+	public Peer registerPeer(SocketWrapper channel);
 
 	/**
 	 * Sends a packet to a peer.
@@ -45,8 +40,6 @@ public interface Protocol {
 	 * @param address The peer's address
 	 * @return A peer, or <code>null</code> if none was found.
 	 */
-	public default Peer getPeer(SocketAddress address){
-		return getConnectedPeers().get(address);
-	}
+	public Peer getPeer(SocketAddress address);
 
 }
