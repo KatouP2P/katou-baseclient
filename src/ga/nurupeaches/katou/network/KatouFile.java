@@ -1,5 +1,6 @@
 package ga.nurupeaches.katou.network;
 
+import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.io.Chunk;
 import ga.nurupeaches.katou.io.MemoryChunk;
 import ga.nurupeaches.katou.utils.HashUtils;
@@ -48,7 +49,7 @@ public class KatouFile {
 	 */
 	public KatouFile(Metadata metadata) throws IOException {
 		//TODO: Re-implement getNode(String)
-		file = new File(/*Configuration.getNode("defaultSaveLocation")*/"", metadata.getName());
+		file = new File(Configuration.getDefaultSaveLocation(), metadata.getName());
 		randomAccessFile = new RandomAccessFile(file, "rw");
 		this.metadata = metadata;
 	}

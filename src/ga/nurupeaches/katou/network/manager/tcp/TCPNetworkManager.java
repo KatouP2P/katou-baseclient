@@ -58,12 +58,6 @@ public class TCPNetworkManager implements NetworkManager {
 
 			if(peer.getSocket().getType() == SocketType.TCP){
 				SocketChannel socket = (SocketChannel)peer.getSocket().getRawSocket();
-				// This only works if the socket is a Socket and not a SocketChannel.
-//				if(socket.isClosed()){
-//					System.out.println("closed");
-					// Remove dead/closed connections from the connected peers list.
-//					peers.remove();
-//				}
 
 				try {
 					ByteBuffer buffer = peer.getBuffer();
@@ -71,6 +65,8 @@ public class TCPNetworkManager implements NetworkManager {
 					int read = socket.read(buffer);
 					if(read == 0){ // No data read.
 						continue;
+					} else if(read == -1){ // Dead/disconnected stream.
+						peers.remove();
 					}
 
 					buffer.flip();
@@ -85,7 +81,6 @@ public class TCPNetworkManager implements NetworkManager {
 					// We still want to process the other peers without halting execution.
 					KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle peer", e);
 				}
-
 			}
 		}
 	}

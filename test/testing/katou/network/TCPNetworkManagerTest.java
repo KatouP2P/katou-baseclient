@@ -3,12 +3,10 @@ package testing.katou.network;
 import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.Metadata;
 import ga.nurupeaches.katou.network.manager.tcp.TCPNetworkManager;
-import ga.nurupeaches.katou.network.packets.Packet;
 import ga.nurupeaches.katou.network.packets.PacketStatus;
 import ga.nurupeaches.katou.network.packets.PacketVersion;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -18,7 +16,6 @@ import java.util.Random;
 
 public class TCPNetworkManagerTest {
 
-	private Socket externalSocket;
 	private TCPNetworkManager manager;
 
 	@Test
@@ -36,7 +33,7 @@ public class TCPNetworkManagerTest {
 
 		networkThread.start();
 
-		externalSocket = new Socket();
+		Socket externalSocket = new Socket();
 		externalSocket.connect(new InetSocketAddress(6800));
 
 		System.out.println("TRYING RANDOM PACKET SENDING - PLEASE WAIT WARMLY FOR CELEBRATION :^)");
@@ -67,7 +64,7 @@ public class TCPNetworkManagerTest {
 			externalSocket.getOutputStream().write(buffer.array());
 		}
 
-		Thread.sleep(2000);
+		Thread.sleep(500);
 	}
 
 	private String[] randomStrings = {
@@ -84,18 +81,8 @@ public class TCPNetworkManagerTest {
 		return builder.toString();
 	}
 
-
 	public String randomHash(SecureRandom random) {
 		return new BigInteger(130, random).toString(16);
-	}
-
-	public ByteBuffer packetToBuffer(Packet packet) throws IOException {
-		ByteBuffer buffer = ByteBuffer.allocate(packet.size() + 1); // + 1 for the ID + 4 for packet size (Int)
-		buffer.put(packet.getID());
-		packet.write(buffer);
-		buffer.flip();
-
-		return buffer;
 	}
 
 }

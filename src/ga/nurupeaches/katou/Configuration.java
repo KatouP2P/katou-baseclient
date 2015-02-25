@@ -81,6 +81,15 @@ public class Configuration {
 					SETTINGS.put("SocketType", SocketType.valueOf(setting[1]));
 				} else if(setting[0].equals("CharacterSet")){
 					SETTINGS.put("CharacterSet", Charset.forName(setting[1]));
+				} else if(setting[0].equals("DefaultSaveLocation")){
+					File file = new File(setting[1]);
+					if(!file.exists()){
+						if(!file.mkdir()){
+							throw new RuntimeException("Failed to create save location!");
+						}
+					}
+
+					SETTINGS.put("DefaultSaveLocation", new File(setting[1]));
 				}
 			}
 		} catch (IOException e){
@@ -96,6 +105,17 @@ public class Configuration {
 		putIfAbsent(SETTINGS, "Port", 6800);
 		putIfAbsent(SETTINGS, "SocketType", SocketType.TCP);
 		putIfAbsent(SETTINGS, "CharacterSet", Charset.forName("UTF-8"));
+
+		File defaultSaveDir = new File("KatouDownloads");
+		if(!defaultSaveDir.exists()){
+			if(!defaultSaveDir.exists()){
+				if(!defaultSaveDir.mkdir()){
+					throw new RuntimeException("Failed to create save location!");
+				}
+			}
+		}
+
+		putIfAbsent(SETTINGS, "DefaultSaveLocation", defaultSaveDir);
 	}
 
 	private static <K, V> void putIfAbsent(Map<K, V> map, K key, V value){
@@ -128,6 +148,14 @@ public class Configuration {
 	 */
 	public static Charset getCharset(){
 		return (Charset)SETTINGS.get("CharacterSet");
+	}
+
+	/**
+	 * Returns the default save location as a File object.
+	 * @return A file representing the default save location.
+	 */
+	public static File getDefaultSaveLocation(){
+		return (File)SETTINGS.get("DefaultSaveLocation");
 	}
 
 }
