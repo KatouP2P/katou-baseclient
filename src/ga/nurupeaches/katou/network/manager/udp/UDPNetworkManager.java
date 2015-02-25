@@ -4,18 +4,21 @@ import ga.nurupeaches.katou.KatouClient;
 import ga.nurupeaches.katou.network.manager.NetworkManager;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.nio.channels.DatagramChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 public class UDPNetworkManager implements NetworkManager {
 
 	private final AtomicBoolean CLOSE_REQUESTED = new AtomicBoolean(false);
-	private DatagramSocket socket;
+	private DatagramChannel serverSocket;
 
 	public UDPNetworkManager(int port){
 		try{
-			socket = new DatagramSocket(port);
+			serverSocket = DatagramChannel.open();
+			serverSocket.socket().bind(new InetSocketAddress(port));
+			serverSocket.configureBlocking(false);
 		} catch (IOException e){
 			KatouClient.LOGGER.log(Level.SEVERE, "Failed to open a new UDP socket!", e);
 		}
@@ -23,7 +26,23 @@ public class UDPNetworkManager implements NetworkManager {
 
 	@Override
 	public void tick(){
-		// TODO: Find out how the hell to get sockets from users ;_;
+		if(!CLOSE_REQUESTED.get()){
+			try{
+				// Accepts any new connection. Doesn't block.
+				checkData(serverSocket);
+				peerTick();
+			} catch (IOException e) {
+				KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle connection!", e);
+			}
+		}
+	}
+
+	public void checkData(DatagramChannel channel) throws IOException {
+		// TODO: Do something.
+	}
+
+	public void peerTick(){
+		// TODO: Do something.
 	}
 
 	@Override

@@ -6,9 +6,9 @@ package ga.nurupeaches.katou.network.manager;
 Packet Structure:
 
  	Generic Structure:
- 		---------------------------------------
- 		| ID of Packet | Packet Length | Data |
- 		---------------------------------------
+ 		------------------------
+ 		| ID of Packet |  Data |
+ 		------------------------
 
  	Data can be:
 		Version:

@@ -67,8 +67,10 @@ public class TCPNetworkManagerTest {
 		Thread.sleep(500);
 	}
 
+	// Not a list of waifus, I swear!
 	private String[] randomStrings = {
-		"Sejuani", "Tenshi", "Frau", "Xenovia", "Katou"
+		"Sejuani", "Tenshi", "Frau", "Xenovia", "Katou", "Aqua", "Yurippe", "Origami",
+			"Tohsaka", "Pepperoni", "Schokolade", "Sarasvati", "Maki", "Chizuru", "Galil"
 	};
 
 	public String randomString(Random random, int length){
