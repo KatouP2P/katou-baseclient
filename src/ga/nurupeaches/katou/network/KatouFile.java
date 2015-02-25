@@ -19,7 +19,7 @@ public class KatouFile {
 	private Map<Integer, Chunk> fileChunks = new HashMap<Integer, Chunk>();
 	private RandomAccessFile randomAccessFile;
 	private File file;
-	private KatouMetadata metadata;
+	private Metadata metadata;
 
 	/**
 	 * Constructs a KatouFile based on an existed file.
@@ -38,15 +38,15 @@ public class KatouFile {
 	 * @throws IOException
 	 */
 	public KatouFile(String name, String hash, long size) throws IOException {
-		this(new KatouMetadata().setName(name).setSize(size).setHash(hash));
+		this(new Metadata().setName(name).setSize(size).setHash(hash));
 	}
 
 	/**
-	 * Constructs a KatouFile based on a KatouMetadata
+	 * Constructs a KatouFile based on a Metadata
 	 * @param metadata The metadata to pass
 	 * @throws IOException
 	 */
-	public KatouFile(KatouMetadata metadata) throws IOException {
+	public KatouFile(Metadata metadata) throws IOException {
 		//TODO: Re-implement getNode(String)
 		file = new File(/*Configuration.getNode("defaultSaveLocation")*/"", metadata.getName());
 		randomAccessFile = new RandomAccessFile(file, "rw");

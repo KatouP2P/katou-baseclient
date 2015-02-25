@@ -1,29 +1,29 @@
 package ga.nurupeaches.katou.network.packets;
 
 import ga.nurupeaches.katou.Configuration;
-import ga.nurupeaches.katou.network.KatouMetadata;
+import ga.nurupeaches.katou.network.Metadata;
 import ga.nurupeaches.katou.utils.PacketUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * Represents a packet that notifies others of a KatouMetadata
+ * Represents a packet that notifies others of a Metadata
  */
 public class PacketStatus extends Packet {
 
-	private KatouMetadata metadata;
+	private Metadata metadata;
 
-	public PacketStatus(KatouMetadata metadata){
+	public PacketStatus(Metadata metadata){
 		this.metadata = metadata;
 	}
 
 	@Override
 	public void init() {
-		metadata = new KatouMetadata();
+		metadata = new Metadata();
 	}
 
-	public KatouMetadata getMetadata() {
+	public Metadata getMetadata() {
 		return metadata;
 	}
 

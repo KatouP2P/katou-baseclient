@@ -36,7 +36,8 @@ public class SimplePeerProtocol implements Protocol {
 
 	@Override
 	public void sendPeerPacket(Peer peer, Packet packet) throws IOException {
-		ByteBuffer buffer = ByteBuffer.allocate(packet.size() + 1); // + 1 for the ID
+		ByteBuffer buffer = ByteBuffer.allocate(packet.size() + 1 + 4); // + 1 for the ID + 4 for Integer
+		buffer.putInt(packet.size());
 		buffer.put(packet.getID());
 		packet.write(buffer);
 		buffer.flip();

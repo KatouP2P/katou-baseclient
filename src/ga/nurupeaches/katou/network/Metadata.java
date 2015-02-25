@@ -3,7 +3,7 @@ package ga.nurupeaches.katou.network;
 /**
  * Represents metadata that is associated with a KatouFile
  */
-public class KatouMetadata {
+public class Metadata {
 
 	/**
 	 * Size of the metadata
@@ -21,7 +21,7 @@ public class KatouMetadata {
 	 */
 	private String hash;
 
-	public KatouMetadata(){}
+	public Metadata(){}
 
 	/**
 	 * Returns the size of the metadata.
@@ -51,7 +51,7 @@ public class KatouMetadata {
 	 * Sets the file size.
 	 * @param size The size of the metadata
 	 */
-	public KatouMetadata setSize(long size) {
+	public Metadata setSize(long size) {
 		this.size = size;
 		return this;
 	}
@@ -60,7 +60,7 @@ public class KatouMetadata {
 	 * Sets the name of the metadata
 	 * @param name The name of the metadata
 	 */
-	public KatouMetadata setName(String name) {
+	public Metadata setName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -69,7 +69,7 @@ public class KatouMetadata {
 	 * Sets the hash of the metadata
 	 * @param hash The hash of the file
 	 */
-	public KatouMetadata setHash(String hash) {
+	public Metadata setHash(String hash) {
 		this.hash = hash;
 		return this;
 	}
@@ -77,11 +77,11 @@ public class KatouMetadata {
 	@Override
 	public boolean equals(Object obj) {
 		// instanceof statements also check for nulls.
-		if(!(obj instanceof KatouMetadata)){
+		if(!(obj instanceof Metadata)){
 			return false;
 		}
 
-		KatouMetadata other = (KatouMetadata)obj;
+		Metadata other = (Metadata)obj;
 		return other.name.equals(name) && other.hash.equals(hash) && other.size == size;
 	}
 

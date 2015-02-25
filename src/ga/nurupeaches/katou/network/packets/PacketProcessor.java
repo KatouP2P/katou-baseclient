@@ -1,7 +1,7 @@
 package ga.nurupeaches.katou.network.packets;
 
 import ga.nurupeaches.katou.KatouClient;
-import ga.nurupeaches.katou.network.KatouMetadata;
+import ga.nurupeaches.katou.network.Metadata;
 import ga.nurupeaches.katou.network.Peer;
 
 import java.io.IOException;
@@ -21,18 +21,17 @@ public class PacketProcessor {
 			// No peer; so why process it?
 			return;
 		}
-		System.out.println("had peer");
 
 		if(packet instanceof PacketVersion){
 			peer.setVersion(((PacketVersion)packet).getVersion());
 			System.out.println("recv: Version(" + peer.getVersion() + ")");
 		} else if(packet instanceof PacketStatus){
-			KatouMetadata metadata = ((PacketStatus)packet).getMetadata();
+			Metadata metadata = ((PacketStatus)packet).getMetadata();
 			if(!peer.hasFile(metadata)){
 //				peer.registerFile(new KatouFile(metadata));
 			}
 
-			System.out.println("recv: KatouMetadata(name=" + metadata.getName() + ",size=" + metadata.getSize() + ",hash=" + metadata.getHash() + ")");
+			System.out.println("recv: Metadata(name=" + metadata.getName() + ",size=" + metadata.getSize() + ",hash=" + metadata.getHash() + ")");
 		}
 
 	}

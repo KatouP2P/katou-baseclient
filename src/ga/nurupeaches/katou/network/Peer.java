@@ -30,7 +30,7 @@ public class Peer {
 		files.add(file);
 	}
 
-	public boolean hasFile(KatouMetadata metadata){
+	public boolean hasFile(Metadata metadata){
 		return files.contains(metadata);
 	}
 
