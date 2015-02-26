@@ -1,4 +1,4 @@
-package testing.katou.network;
+package ga.nurupeaches.katou.network;
 
 import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.Metadata;
