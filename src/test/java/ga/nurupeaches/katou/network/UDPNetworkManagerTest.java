@@ -1,7 +1,6 @@
 package ga.nurupeaches.katou.network;
 
 import ga.nurupeaches.katou.Configuration;
-import ga.nurupeaches.katou.network.Metadata;
 import ga.nurupeaches.katou.network.manager.udp.UDPNetworkManager;
 import ga.nurupeaches.katou.network.packets.PacketStatus;
 import ga.nurupeaches.katou.network.packets.PacketVersion;
@@ -22,7 +21,7 @@ public class UDPNetworkManagerTest {
 	@Test
 	public void testTick() throws Exception {
 		Configuration.loadDefaults();
-		manager = new UDPNetworkManager(6800);
+		manager = new UDPNetworkManager();
 		Thread networkThread = new Thread(new Runnable() {
 			@Override
 			public void run() {

@@ -1,9 +1,9 @@
 package ga.nurupeaches.katou.network.packets;
 
 import ga.nurupeaches.katou.KatouClient;
-import ga.nurupeaches.katou.network.KatouFile;
 import ga.nurupeaches.katou.network.Metadata;
 import ga.nurupeaches.katou.network.Peer;
+import ga.nurupeaches.katou.network.KatouFile;
 
 import java.io.IOException;
 

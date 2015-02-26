@@ -5,36 +5,40 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Class to wrap a TCP (Socket) or UDP (DatagramSocket) socket into a neater, more accessible class.
  */
 public class SocketWrapper {
 
-	private final static List<Class<?>> SUPPORTED_CLASSES = new ArrayList<Class<?>>(Arrays.asList(new Class<?>[]{
-
-			DatagramChannel.class, SocketChannel.class
-
-	}));
-
+    /**
+     * Raw socket object. Must be casted to be used.
+     */
 	private final Object socket;
 
-	/**
-	 * Constructs a SocketWrapper with a supported socket type
-	 * @param socket The socket; must be a supported socket type
-	 * @throws IllegalArgumentException If the socket was not a supported socket type
-	 */
-	public SocketWrapper(Object socket){
-		if(!SUPPORTED_CLASSES.contains(socket.getClass().getSuperclass())){
-			throw new IllegalArgumentException("Not supported: " + socket.getClass() + ". " +
-					"SocketWrapper only supports: " + Arrays.toString(SUPPORTED_CLASSES.toArray()));
-		}
+    /**
+     * The remote address of the socket.
+     */
+    private final SocketAddress address;
 
+	/**
+	 * Constructs a SocketWrapper with a SocketChannel
+	 * @param socket A SocketChannel given from ServerSocketChannel.
+	 */
+	public SocketWrapper(SocketChannel socket){
 		this.socket = socket;
+        this.address = socket.socket().getRemoteSocketAddress();
 	}
+
+    /**
+     * Constructs a SocketWrapper with a DatagramChannel; setting the address to the given address.
+     * @param address The address to "bind" this wrapper to.
+     * @param socket The socket to use (typically the one referenced in UDPNetworkManager).
+     */
+    public SocketWrapper(SocketAddress address, DatagramChannel socket){
+        this.socket = socket;
+        this.address = address;
+    }
 
 	/**
 	 * Returns the socket's address.
@@ -42,14 +46,7 @@ public class SocketWrapper {
 	 * @throws IllegalStateException If the socket wasn't supported
 	 */
 	public SocketAddress getAddress(){
-		// TODO: Figure out a way to do this without casting.
-		if(socket instanceof DatagramChannel){
-			return ((DatagramChannel)socket).socket().getRemoteSocketAddress();
-		} else if(socket instanceof SocketChannel){
-			return ((SocketChannel)socket).socket().getRemoteSocketAddress();
-		} else {
-			throw new IllegalStateException("The given socket was " + socket.getClass().getName() + ", which is not supported!");
-		}
+		return address;
 	}
 
 	/**
@@ -86,10 +83,10 @@ public class SocketWrapper {
 			DatagramChannel datagramSocket = (DatagramChannel)socket;
 			// Be careful; we create a new DatagramSocket that may have not been connected for some reason.
 			if(!datagramSocket.isConnected()){
-				throw new IllegalStateException("Socket isn't connected!");
-			}
+                throw new IllegalStateException("Socket isn't connected!");
+            }
 
-			datagramSocket.write(buffer);
+			datagramSocket.send(buffer, address);
 		}
 	}
 

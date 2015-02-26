@@ -1,7 +1,6 @@
 package ga.nurupeaches.katou.network;
 
 import ga.nurupeaches.katou.Configuration;
-import ga.nurupeaches.katou.network.Metadata;
 import ga.nurupeaches.katou.network.manager.tcp.TCPNetworkManager;
 import ga.nurupeaches.katou.network.packets.PacketStatus;
 import ga.nurupeaches.katou.network.packets.PacketVersion;
@@ -21,7 +20,7 @@ public class TCPNetworkManagerTest {
 	@Test
 	public void testTick() throws Exception {
 		Configuration.loadDefaults();
-		manager = new TCPNetworkManager(6800);
+		manager = new TCPNetworkManager();
 		Thread networkThread = new Thread(new Runnable() {
 			@Override
 			public void run() {

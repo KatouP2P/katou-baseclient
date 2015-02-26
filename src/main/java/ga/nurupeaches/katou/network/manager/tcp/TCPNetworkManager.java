@@ -9,7 +9,6 @@ import ga.nurupeaches.katou.network.packets.Packet;
 import ga.nurupeaches.katou.network.packets.PacketProcessor;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -23,9 +22,9 @@ public class TCPNetworkManager implements NetworkManager {
 	private final AtomicBoolean CLOSE_REQUESTED = new AtomicBoolean(false);
 	private ServerSocketChannel serverSocket;
 
-	public TCPNetworkManager(int port) throws IOException {
+	public TCPNetworkManager() throws IOException {
 		serverSocket = ServerSocketChannel.open();
-		serverSocket.socket().bind(new InetSocketAddress(port));
+		serverSocket.socket().bind(NetworkManager.BIND_ADDRESS);
 		serverSocket.configureBlocking(false);
 	}
 

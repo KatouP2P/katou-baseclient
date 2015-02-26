@@ -1,6 +1,16 @@
 package ga.nurupeaches.katou.network.manager;
 
+import ga.nurupeaches.katou.Configuration;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+
 public interface NetworkManager {
+
+    /**
+     * The address to bind to. Currently binds only to "localhost".
+     */
+    public static final SocketAddress BIND_ADDRESS = new InetSocketAddress(Configuration.getPort());
 
 	/**
 	 * The default buffer size, measured in bytes.

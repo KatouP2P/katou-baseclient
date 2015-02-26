@@ -62,15 +62,14 @@ public class KatouClient {
 	public void initializeNetworking() throws IOException {
 		if(networkManager == null){
 			SocketType networkType = Configuration.getSocketType();
-			int port = Configuration.getPort();
 
 			switch(networkType){
 				case TCP:
-					networkManager = new TCPNetworkManager(port);
+					networkManager = new TCPNetworkManager();
 					break;
 
 				case UDP:
-					networkManager = new UDPNetworkManager(port);
+					networkManager = new UDPNetworkManager();
 					break;
 			}
 		}
