@@ -1,10 +1,9 @@
 package ga.nurupeaches.katou.network.manager;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,16 +16,11 @@ public class SocketWrapper {
 
 	private final static List<Class<?>> SUPPORTED_CLASSES = new ArrayList<Class<?>>(Arrays.asList(new Class<?>[]{
 
-			DatagramSocket.class, SocketChannel.class
+			DatagramChannel.class, SocketChannel.class
 
 	}));
 
 	private final Object socket;
-
-	/**
-	 * Specific to DatagramSockets.
-	 */
-	private DatagramPacket outgoingPacket;
 
 	/**
 	 * Constructs a SocketWrapper with a supported socket type
@@ -40,10 +34,6 @@ public class SocketWrapper {
 		}
 
 		this.socket = socket;
-
-		if(socket instanceof DatagramSocket){
-			outgoingPacket = new DatagramPacket(new byte[0], 0);
-		}
 	}
 
 	/**
@@ -53,8 +43,8 @@ public class SocketWrapper {
 	 */
 	public SocketAddress getAddress(){
 		// TODO: Figure out a way to do this without casting.
-		if(socket instanceof DatagramSocket){
-			return ((DatagramSocket)socket).getRemoteSocketAddress();
+		if(socket instanceof DatagramChannel){
+			return ((DatagramChannel)socket).socket().getRemoteSocketAddress();
 		} else if(socket instanceof SocketChannel){
 			return ((SocketChannel)socket).socket().getRemoteSocketAddress();
 		} else {
@@ -69,7 +59,7 @@ public class SocketWrapper {
 	public SocketType getType(){
 		if(socket instanceof SocketChannel){
 			return SocketType.TCP;
-		} else if(socket instanceof DatagramSocket){
+		} else if(socket instanceof DatagramChannel){
 			return SocketType.UDP;
 		} else {
 			return SocketType.UNKNOWN;
@@ -92,16 +82,14 @@ public class SocketWrapper {
 	public void write(ByteBuffer buffer) throws IOException {
 		if(socket instanceof SocketChannel){
 			((SocketChannel)socket).write(buffer);
-		} else if(socket instanceof DatagramSocket){
-			DatagramSocket datagramSocket = (DatagramSocket)socket;
+		} else if(socket instanceof DatagramChannel){
+			DatagramChannel datagramSocket = (DatagramChannel)socket;
 			// Be careful; we create a new DatagramSocket that may have not been connected for some reason.
 			if(!datagramSocket.isConnected()){
 				throw new IllegalStateException("Socket isn't connected!");
 			}
 
-			outgoingPacket.setData(buffer.array());
-			outgoingPacket.setLength(buffer.array().length);
-			datagramSocket.send(outgoingPacket);
+			datagramSocket.write(buffer);
 		}
 	}
 

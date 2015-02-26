@@ -2,26 +2,27 @@ package testing.katou.network;
 
 import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.Metadata;
-import ga.nurupeaches.katou.network.manager.tcp.TCPNetworkManager;
+import ga.nurupeaches.katou.network.manager.udp.UDPNetworkManager;
 import ga.nurupeaches.katou.network.packets.PacketStatus;
 import ga.nurupeaches.katou.network.packets.PacketVersion;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Random;
 
-public class TCPNetworkManagerTest {
+public class UDPNetworkManagerTest {
 
-	private TCPNetworkManager manager;
+	private UDPNetworkManager manager;
 
 	@Test
 	public void testTick() throws Exception {
 		Configuration.loadDefaults();
-		manager = new TCPNetworkManager(6800);
+		manager = new UDPNetworkManager(6800);
 		Thread networkThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -33,10 +34,10 @@ public class TCPNetworkManagerTest {
 
 		networkThread.start();
 
-		Socket externalSocket = new Socket();
-		externalSocket.connect(new InetSocketAddress(6800));
+		DatagramSocket externalSocket = new DatagramSocket();
+		externalSocket.connect(new InetSocketAddress("localhost", 6800));
 
-		System.out.println("TRYING RANDOM TCP PACKET SENDING - PLEASE WAIT WARMLY FOR CELEBRATION :^)");
+		System.out.println("TRYING RANDOM UDP PACKET SENDING - PLEASE WAIT WARMLY FOR CELEBRATION :^)");
 
 		SecureRandom srng = new SecureRandom();
 		Random random = new Random();
@@ -44,6 +45,7 @@ public class TCPNetworkManagerTest {
 		PacketStatus statusPacket = new PacketStatus(metadata);
 		PacketVersion versionPacket;
 		ByteBuffer buffer;
+		DatagramPacket packet = new DatagramPacket(new byte[0], 0);
 		for(int i=0; i < 50; i++){
 			if(random.nextBoolean()){
 				versionPacket = new PacketVersion(randomString(random, 1));
@@ -61,15 +63,17 @@ public class TCPNetworkManagerTest {
 				statusPacket.write(buffer);
 			}
 
-			externalSocket.getOutputStream().write(buffer.array());
+			packet.setData(buffer.array());
+			packet.setLength(buffer.array().length);
+			externalSocket.send(packet);
 		}
 
-		Thread.sleep(500);
+		Thread.sleep(1000);
 	}
 
 	// Not a list of waifus, I swear!
 	private String[] randomStrings = {
-		"Sejuani", "Tenshi", "Frau", "Xenovia", "Katou", "Aqua", "Yurippe", "Origami",
+			"Sejuani", "Tenshi", "Frau", "Xenovia", "Katou", "Aqua", "Yurippe", "Origami",
 			"Tohsaka", "Pepperoni", "Schokolade", "Sarasvati", "Maki", "Chizuru", "Galil"
 	};
 

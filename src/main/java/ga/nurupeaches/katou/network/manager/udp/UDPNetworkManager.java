@@ -1,12 +1,20 @@
 package ga.nurupeaches.katou.network.manager.udp;
 
 import ga.nurupeaches.katou.KatouClient;
+import ga.nurupeaches.katou.network.Peer;
 import ga.nurupeaches.katou.network.manager.NetworkManager;
+import ga.nurupeaches.katou.network.manager.SocketType;
+import ga.nurupeaches.katou.network.manager.SocketWrapper;
+import ga.nurupeaches.katou.network.packets.Packet;
+import ga.nurupeaches.katou.network.packets.PacketProcessor;
+import ga.nurupeaches.katou.network.protocol.Protocol;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.nio.channels.Selector;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -31,7 +39,7 @@ public class UDPNetworkManager implements NetworkManager {
 		if(!CLOSE_REQUESTED.get()){
 			try{
 				// Accepts any new connection. Doesn't block.
-				checkData(serverSocket);
+				checkData();
 				peerTick();
 			} catch (IOException e) {
 				KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle connection!", e);
@@ -39,11 +47,13 @@ public class UDPNetworkManager implements NetworkManager {
 		}
 	}
 
-	public void checkData(DatagramChannel channel) throws IOException {
-        SocketAddress address = serverSocket.recieve(buffer);
+	public void checkData() throws IOException {
+        SocketAddress address = serverSocket.receive(buffer);
         if(address == null){ // No data recieved.
             return;
-        }
+        } else {
+			System.out.println(address);
+		}
         
         Protocol protocol = KatouClient.getProtocol();
         if(protocol.getPeer(address) == null){ // Probably easy to DoS clients now. TODO: Fix DoS vuln!

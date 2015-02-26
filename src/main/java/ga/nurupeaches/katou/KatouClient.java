@@ -47,6 +47,8 @@ public class KatouClient {
 		System.out.println("KatouCLI - Hello, world!");
 		KatouClient client = new KatouClient();
 		client.initializeNetworking();
+
+
 	}
 
 	/**
