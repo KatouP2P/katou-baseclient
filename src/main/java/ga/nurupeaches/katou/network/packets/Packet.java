@@ -75,7 +75,7 @@ public abstract class Packet {
 	}
 
 	/**
-	 * Initializes the packet after creation without parameters..
+	 * Initializes the packet after creation without parameters.
 	 */
 	public abstract void init();
 

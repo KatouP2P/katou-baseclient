@@ -3,7 +3,6 @@ package ga.nurupeaches.katou.network;
 import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.manager.tcp.TCPNetworkManager;
 import ga.nurupeaches.katou.network.packets.PacketStatus;
-import ga.nurupeaches.katou.network.packets.PacketVersion;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -41,29 +40,20 @@ public class TCPNetworkManagerTest {
 		Random random = new Random();
 		Metadata metadata = new Metadata();
 		PacketStatus statusPacket = new PacketStatus(metadata);
-		PacketVersion versionPacket;
 		ByteBuffer buffer;
 		for(int i=0; i < 50; i++){
-			if(random.nextBoolean()){
-				versionPacket = new PacketVersion(randomString(random, 1));
+			metadata.setSize(Math.abs(random.nextLong()));
+			metadata.setName(randomString(random, 15));
+			metadata.setHash(randomHash(srng));
 
-				buffer = ByteBuffer.allocate(versionPacket.size() + 1);
-				buffer.put(versionPacket.getID());
-				versionPacket.write(buffer);
-			} else {
-				metadata.setSize(Math.abs(random.nextLong()));
-				metadata.setName(randomString(random, 3));
-				metadata.setHash(randomHash(srng));
-
-				buffer = ByteBuffer.allocate(statusPacket.size() + 1);
-				buffer.put(statusPacket.getID());
-				statusPacket.write(buffer);
-			}
-
+			buffer = ByteBuffer.allocate(statusPacket.size() + 1 + 4);
+			buffer.putInt(statusPacket.size());
+			buffer.put(statusPacket.getID());
+			statusPacket.write(buffer);
 			externalSocket.getOutputStream().write(buffer.array());
 		}
 
-		Thread.sleep(500);
+		Thread.sleep(2000);
 	}
 
 	// Not a list of waifus, I swear!

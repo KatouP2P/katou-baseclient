@@ -1,6 +1,5 @@
 package ga.nurupeaches.katou.network.packets;
 
-import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.Metadata;
 import ga.nurupeaches.katou.utils.PacketUtils;
 
@@ -31,11 +30,10 @@ public class PacketStatus extends Packet {
 	public void read(ByteBuffer buffer) throws IOException {
 		String name = PacketUtils.readString(buffer);
 		String hash = PacketUtils.readString(buffer);
-		long size = buffer.getLong();
-
+//		long size = buffer.getLong();
 		metadata.setName(name);
 		metadata.setHash(hash);
-		metadata.setSize(size);
+		metadata.setSize(0);
 	}
 
 	@Override
@@ -48,10 +46,9 @@ public class PacketStatus extends Packet {
 	@Override
 	public int size(){
 		int size = 0;
-		size += metadata.getName().getBytes(Configuration.getCharset()).length;
-		size += metadata.getHash().getBytes(Configuration.getCharset()).length;
+		size += PacketUtils.stringSize(metadata.getName());
+		size += PacketUtils.stringSize(metadata.getHash());
 		size += 8; // Long is 8 bytes long.
-		size += (4 * 2); // Integer is 4 bytes long.
 		return size;
 	}
 

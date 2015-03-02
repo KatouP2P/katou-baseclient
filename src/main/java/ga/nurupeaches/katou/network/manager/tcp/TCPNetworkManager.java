@@ -44,7 +44,7 @@ public class TCPNetworkManager implements NetworkManager {
 	public void handleNewConnection(SocketChannel socket) throws IOException {
 		if(socket != null){
 			KatouClient.getProtocol().registerPeer(new SocketWrapper(socket));
-			KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + socket.socket().getRemoteSocketAddress() + ".");
+//			KatouClient.LOGGER.log(Level.INFO, "Accepted new TCP connection from " + socket.socket().getRemoteSocketAddress() + ".");
 			socket.configureBlocking(false);
 			// TODO: Call event saying a new peer has connected.
 		}
@@ -70,18 +70,51 @@ public class TCPNetworkManager implements NetworkManager {
 
 					buffer.flip();
 
-					Packet packet = Packet.convertPacket(buffer.get());
-					packet.setOrigin(peer.getSocket().getAddress());
-					packet.read(buffer);
+					// According to TCPNMTest, this is supposed to be 157.
+					// This is returning 152. java pls.
+					// I"m such an idiot; I needed to allocate 5 extra bytes.
+					int packetSize = buffer.getInt();
+					if(packetSize > buffer.capacity()){
+//						KatouClient.LOGGER.log(Level.INFO, "Received packet larger than buffer. Got " + packetSize);
 
-					buffer.compact();
-					PacketProcessor.process(packet);
+						ByteBuffer extendedBuffer = ByteBuffer.allocate(packetSize + 5);
+						extendedBuffer.put((ByteBuffer)buffer.position(0));
+
+						int extRead = socket.read(extendedBuffer);
+						extendedBuffer.flip();
+
+						if(extRead == 0){
+							KatouClient.LOGGER.log(Level.WARNING, "Client sent a packet larger than buffer but " +
+									"never sent the rest of the packet.");
+						} else if(extRead == -1){
+							KatouClient.LOGGER.log(Level.WARNING, "Client disconnected midway into I/O operation.");
+							peers.remove();
+						}
+
+						buffer = extendedBuffer;
+					}
+
+					buffer.position(4);
+					handleBuffer(buffer, peer);
+
+					if(buffer != peer.getBuffer()){ // We passed an extended buffer; fix the old one!
+						peer.getBuffer().compact();
+					}
 				} catch (IOException e){
 					// We still want to process the other peers without halting execution.
 					KatouClient.LOGGER.log(Level.SEVERE, "Failed to handle peer", e);
 				}
 			}
 		}
+	}
+
+	public void handleBuffer(ByteBuffer buffer, Peer peer) throws IOException {
+		Packet packet = Packet.convertPacket(buffer.get());
+		packet.setOrigin(peer.getSocket().getAddress());
+		packet.read(buffer);
+
+		buffer.rewind();
+		PacketProcessor.process(packet);
 	}
 
 	@Override

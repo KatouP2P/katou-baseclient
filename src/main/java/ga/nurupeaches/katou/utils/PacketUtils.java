@@ -30,5 +30,12 @@ public class PacketUtils {
 		buffer.putInt(stringBytes.length);
 		buffer.put(stringBytes);
 	}
+	/**
+	 * Calculates how large a string is in bytes.
+	 * @param string
+	 */
+	public static int stringSize(String string){
+		return 4 + string.getBytes(Configuration.getCharset()).length;
+	}
 
 }

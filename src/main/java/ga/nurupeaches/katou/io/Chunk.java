@@ -8,6 +8,7 @@ public interface Chunk {
 	/**
 	 * The default size of a chunk. Measured in KB (kilobytes).
 	 */
+	// 1000KB = 1MB
 	public static final int DEFAULT_CHUNK_SIZE = 1000;
 
 	/**

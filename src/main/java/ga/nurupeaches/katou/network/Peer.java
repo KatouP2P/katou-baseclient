@@ -1,7 +1,7 @@
 package ga.nurupeaches.katou.network;
 
-import ga.nurupeaches.katou.network.manager.SocketWrapper;
 import ga.nurupeaches.katou.network.manager.NetworkManager;
+import ga.nurupeaches.katou.network.manager.SocketWrapper;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -40,6 +40,14 @@ public class Peer {
 
 	public int getNextBlock() {
 		return nextBlock;
+	}
+
+	public int getAndIncremenetNextBlock(){
+		try {
+			return nextBlock;
+		} finally {
+			nextBlock++;
+		}
 	}
 
 	public SocketWrapper getSocket(){
