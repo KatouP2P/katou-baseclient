@@ -1,27 +1,19 @@
-package ga.nurupeaches.katou.io;
+package ga.nurupeaches.katou.chunk;
+
+import ga.nurupeaches.katou.network.Transmittable;
 
 /**
  * Represents a chunk.
  */
-public interface Chunk {
-
-	/**
-	 * The default size of a chunk. Measured in KB (kilobytes).
-	 */
-	// 1000KB = 1MB
-	public static final int DEFAULT_CHUNK_SIZE = 1000;
-
-	/**
-	 * Returns the position for this chunk.
-	 * @return The position for file reading/writing.
-	 */
-	public long getPosition();
+public interface Chunk extends Transmittable {
 
 	/**
 	 * Returns the Id of this chunk.
 	 * @return The Id.
 	 */
 	public int getId();
+
+	public int getSize();
 
 	/**
 	 * Validates the chunk and returns whether or not if it was valid.

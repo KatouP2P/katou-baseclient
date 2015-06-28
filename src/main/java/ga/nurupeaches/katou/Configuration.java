@@ -1,22 +1,24 @@
 package ga.nurupeaches.katou;
 
-import ga.nurupeaches.katou.network.manager.SocketType;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
-public class Configuration {
+public final class Configuration {
 
 	/**
 	 * The mapping of all the settings. Can contain settings Katou doesn't even use.
 	 */
-	private static final Map<String, Object> SETTINGS = new HashMap<String, Object>();
+	private static final Map<String, Object> SETTINGS = new HashMap<>(3);
 
 	static {
 		// Load the default configuration.
@@ -28,94 +30,126 @@ public class Configuration {
 	 */
 	private Configuration(){}
 
-	/**
-	 * Loads the default
-	 */
+    /**
+     * Loads the config file.
+     */
 	public static void loadConfig(){
-		loadConfig(new File("katou.config"));
+		loadConfig(Paths.get(System.getProperty("user.home"), "katou.config"));
 	}
+
+    /**
+     * Saves the config file.
+     */
+    public static void saveConfig(){
+        saveConfig(Paths.get(System.getProperty("user.home"), "katou.config"));
+    }
 
 	/**
 	 * Loads the configuration file.
 	 * @param config - The configuration file to load.
 	 */
-	public static void loadConfig(File config){
+	private static void loadConfig(Path config){
 		SETTINGS.clear(); // Flush out the old settings.
 
-		if(!config.exists()){
+		if(!Files.exists(config)){
 			try{
-				if(!config.createNewFile()){
+				Files.createFile(config);
+				if(!Files.exists(config)){
 					throw new IOException("exists() returned false but existed?");
 				}
-
-				loadDefaults();
 			} catch (IOException e){
 				e.printStackTrace();
 			}
 		}
 
 		try{
-			BufferedReader reader = new BufferedReader(new FileReader(config));
-			String l;
-			while((l = reader.readLine()) != null){
-				// # is used to start a comment.
-				if(l.startsWith("#")){
-					continue;
-				}
+			Stream<String> stream = Files.lines(config);
+			stream.forEach(str -> {
+                if(str.isEmpty() || str.startsWith("#")){
+                    return;
+                }
 
-				if(!l.contains(":")){
-					KatouClient.LOGGER.log(Level.WARNING, "Line " + l + " is invalid.");
-					continue;
-				}
+                if(!str.contains("=")){
+                    KatouClient.LOGGER.log(Level.WARNING, "Line " + str + " is invalid.");
+                    return;
+                }
 
-				String[] setting = l.split(":");
-				if(setting.length < 1){
-					KatouClient.LOGGER.log(Level.WARNING, "Line " + l + " is empty.");
-					continue;
-				}
-
-				// Reserved for Katou.
-				if(setting[0].equals("Port")){
-					SETTINGS.put("Port", Integer.parseInt(setting[1]));
-				} else if(setting[0].equals("SocketType")){
-					SETTINGS.put("SocketType", SocketType.valueOf(setting[1]));
-				} else if(setting[0].equals("CharacterSet")){
-					SETTINGS.put("CharacterSet", Charset.forName(setting[1]));
-				} else if(setting[0].equals("DefaultSaveLocation")){
-					File file = new File(setting[1]);
-					if(!file.exists()){
-						if(!file.mkdir()){
-							throw new RuntimeException("Failed to create save location!");
-						}
-					}
-
-					SETTINGS.put("DefaultSaveLocation", new File(setting[1]));
-				}
-			}
+                String[] setting = str.split("=");
+                switch(setting[0].toLowerCase()){
+                    case "port":
+                        SETTINGS.put("Port", Integer.parseInt(setting[1]));
+                        break;
+                    case "characterset":
+                        SETTINGS.put("CharacterSet", Charset.forName(setting[1]));
+                        break;
+                    case "buffersize":
+                        SETTINGS.put("BufferSize", Integer.parseInt(setting[1]));
+                        break;
+                    case "defaultsavelocation":
+                        Path saveLocation = Paths.get(setting[1]);
+                        if(!Files.exists(saveLocation)){
+                            try {
+                                Files.createDirectories(saveLocation);
+                            } catch(IOException e){
+                                throw new RuntimeException("Failed to create save location!");
+                            }
+                        }
+                        SETTINGS.put("DefaultSaveLocation", saveLocation);
+                        break;
+                }
+            });
 		} catch (IOException e){
 			KatouClient.LOGGER.log(Level.SEVERE, "Failed to load configuration file.", e);
 		}
 
+        // Load defaults for missing settings
+        loadDefaults();
 	}
+
+    private static void saveConfig(Path config){
+        OutputStream stream = null;
+        try {
+            stream = Files.newOutputStream(config);
+
+            for(Map.Entry<String, Object> obj : SETTINGS.entrySet()){
+                String value;
+                if(obj.getValue() instanceof Charset){
+                    value = ((Charset) obj.getValue()).displayName(Locale.ENGLISH);
+                } else {
+                    value = obj.getValue().toString();
+                }
+
+                stream.write((obj.getKey() + '=' + value + System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
+            }
+        } catch (IOException e){
+            e.printStackTrace();
+        } finally {
+            if(stream != null){
+                try {
+                    stream.flush();
+                    stream.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
 	/**
 	 * Loads the default settings.
 	 */
 	public static void loadDefaults(){
 		putIfAbsent(SETTINGS, "Port", 6800);
-		putIfAbsent(SETTINGS, "SocketType", SocketType.TCP);
-		putIfAbsent(SETTINGS, "CharacterSet", Charset.forName("UTF-8"));
+        Path defaultSaveDir = Paths.get(System.getProperty("user.home"), "KatouDownloads");
+		try {
+            Files.createDirectories(defaultSaveDir);
+        } catch (IOException e){
+            KatouClient.LOGGER.log(Level.WARNING, "Failing to create default save directory!");
+        }
 
-		File defaultSaveDir = new File("KatouDownloads");
-		if(!defaultSaveDir.exists()){
-			if(!defaultSaveDir.exists()){
-				if(!defaultSaveDir.mkdir()){
-					throw new RuntimeException("Failed to create save location!");
-				}
-			}
-		}
-
-		putIfAbsent(SETTINGS, "DefaultSaveLocation", defaultSaveDir);
+        putIfAbsent(SETTINGS, "DefaultSaveLocation", defaultSaveDir);
+        putIfAbsent(SETTINGS, "BufferSize", 512);
+        System.out.println("Loaded defaults");
 	}
 
 	private static <K, V> void putIfAbsent(Map<K, V> map, K key, V value){
@@ -127,12 +161,10 @@ public class Configuration {
 	}
 
 	/**
-	 * Returns the socket type to use.
-	 * @return The socket type or TCP if was set ot default.
+	 * Returns the buffer size.
+     * @return Buffer size
 	 */
-	public static SocketType getSocketType(){
-		return (SocketType)SETTINGS.get("SocketType");
-	}
+	public static Integer getBufferSize(){ return (Integer)SETTINGS.get("BufferSize"); }
 
 	/**
 	 * Returns the port to use.
@@ -144,18 +176,17 @@ public class Configuration {
 
 	/**
 	 * Returns the character set to use for parsing Strings.
-	 * @return A character set or the UTF-8 charset if was set to default.
-	 */
-	public static Charset getCharset(){
-		return (Charset)SETTINGS.get("CharacterSet");
+	 * @return UTF-8 charset if was set to default.
+	 */	public static Charset getCharset(){
+		return StandardCharsets.UTF_8;
 	}
 
 	/**
 	 * Returns the default save location as a File object.
 	 * @return A file representing the default save location.
 	 */
-	public static File getDefaultSaveLocation(){
-		return (File)SETTINGS.get("DefaultSaveLocation");
+	public static Path getDefaultSaveLocation(){
+		return (Path)SETTINGS.get("DefaultSaveLocation");
 	}
 
 }

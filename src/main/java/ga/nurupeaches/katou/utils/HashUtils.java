@@ -11,11 +11,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 
-public class HashUtils {
+public final class HashUtils {
 
 	private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 	private static final String DEFAULT_HASH = "SHA-256";
 	private static MessageDigest DIGEST;
+
+	private HashUtils(){}
 
 	static {
 		try {
@@ -25,7 +27,7 @@ public class HashUtils {
 		}
 	}
 
-	public static byte[] computeHash(byte[] data){
+	public static byte[] computeHash(byte... data){
 		try{
 			DIGEST.update(data);
 			return DIGEST.digest();
@@ -81,7 +83,7 @@ public class HashUtils {
 		}
 	}
 
-	public static String hexifyArray(byte[] array){
+	public static String hexifyArray(byte... array){
 		char[] hexified = new char[array.length * 2];
 		for(int i = 0; i < array.length; i++){
 			int v = array[i] & 0xFF;
