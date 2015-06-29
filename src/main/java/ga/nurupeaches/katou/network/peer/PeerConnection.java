@@ -9,28 +9,25 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.Channel;
+import java.nio.channels.DatagramChannel;
 
-public class PeerConnection implements TypeWritable, TypeReadable, Flushable {
+public class PeerConnection<T extends Channel> implements TypeWritable, TypeReadable, Flushable {
 
-    private AsynchronousSocketChannel channel;
+    private Channel channel;
     private SocketAddress address;
     private Peer peer;
 
     /*
      * TODO: Handle UDP.
      */
-    public PeerConnection(AsynchronousSocketChannel channel, Peer peer){
+    public PeerConnection(Channel channel, SocketAddress address, Peer peer){
         this.channel = channel;
         this.peer = peer;
-
-        try {
-            address = channel.getRemoteAddress();
-        } catch (IOException e){
-            e.printStackTrace(); // TODO: handle
-        }
+        this.address = address;
     }
 
-    public AsynchronousSocketChannel getChannel(){
+    public Channel getChannel(){
         return channel;
     }
 
@@ -49,45 +46,49 @@ public class PeerConnection implements TypeWritable, TypeReadable, Flushable {
 
     @Override
     public void flush() throws IOException{
-        channel.write(peer.buffer);
-        peer.buffer.clear();
+        if(channel instanceof AsynchronousSocketChannel){
+            ((AsynchronousSocketChannel)channel).write(peer.outBuffer);
+        } else if(channel instanceof DatagramChannel){
+            ((DatagramChannel)channel).send(peer.outBuffer, address);
+        }
+        peer.outBuffer.clear();
     }
 
     @Override
     public void writeString(String string){
         byte[] bytes = string.getBytes(Configuration.getCharset());
         writeInt(bytes.length);
-        peer.buffer.put(bytes);
+        peer.outBuffer.put(bytes);
     }
 
     @Override
     public void writeLong(long l){
-        peer.buffer.putLong(l);
+        peer.outBuffer.putLong(l);
     }
 
     @Override
     public void writeInt(int i){
-        peer.buffer.putInt(i);
+        peer.outBuffer.putInt(i);
     }
 
     @Override
     public void writeShort(short s){
-        peer.buffer.putShort(s);
+        peer.outBuffer.putShort(s);
     }
 
     @Override
     public void writeByte(byte b){
-        peer.buffer.put(b);
+        peer.outBuffer.put(b);
     }
 
     @Override
     public void writeBytes(byte[] src){
-        peer.buffer.put(src);
+        peer.outBuffer.put(src);
     }
 
     @Override
     public void writeBytes(ByteBuffer bb, int len){
-        TypeWritable.writeBBtoBB(bb, peer.buffer, len);
+        TypeWritable.writeBBtoBB(bb, peer.outBuffer, len);
     }
 
     @Override
@@ -99,32 +100,32 @@ public class PeerConnection implements TypeWritable, TypeReadable, Flushable {
 
     @Override
     public long readLong(){
-        return peer.buffer.getLong();
+        return peer.inBuffer.getLong();
     }
 
     @Override
     public int readInt(){
-        return peer.buffer.getInt();
+        return peer.inBuffer.getInt();
     }
 
     @Override
     public short readShort(){
-        return peer.buffer.getShort();
+        return peer.inBuffer.getShort();
     }
 
     @Override
     public byte readByte(){
-        return peer.buffer.get();
+        return peer.inBuffer.get();
     }
 
     @Override
     public void readBytes(byte[] into){
-        peer.buffer.get(into);
+        peer.inBuffer.get(into);
     }
 
     @Override
     public void readBytes(ByteBuffer bb, int len){
-        TypeReadable.readBBtoBB(bb, peer.buffer, len);
+        TypeReadable.readBBtoBB(bb, peer.inBuffer, len);
     }
 
 }

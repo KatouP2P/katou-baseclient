@@ -1,14 +1,12 @@
 package ga.nurupeaches.katou.network.peer;
 
-import ga.nurupeaches.katou.Configuration;
-
 import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PeerManager {
 
-    private Map<SocketAddress, Peer> map = new ConcurrentHashMap<>(Configuration.getBufferSize());
+    private Map<SocketAddress, Peer> map = new ConcurrentHashMap<>(25);
     private static final PeerManager SINGLETON = new PeerManager();
 
     private PeerManager(){}
@@ -19,6 +17,10 @@ public class PeerManager {
 
     public Peer getPeer(SocketAddress address){
         return map.get(address);
+    }
+
+    public boolean hasPeer(SocketAddress address){
+        return map.containsKey(address);
     }
 
     public void registerPeer(Peer peer){

@@ -148,7 +148,8 @@ public final class Configuration {
         }
 
         putIfAbsent(SETTINGS, "DefaultSaveLocation", defaultSaveDir);
-        putIfAbsent(SETTINGS, "BufferSize", 512);
+        putIfAbsent(SETTINGS, "RecvBufferSize", 512);
+        putIfAbsent(SETTINGS, "SendBufferSize", 512);
         System.out.println("Loaded defaults");
 	}
 
@@ -160,11 +161,17 @@ public final class Configuration {
 		map.put(key, value);
 	}
 
-	/**
-	 * Returns the buffer size.
-     * @return Buffer size
-	 */
-	public static Integer getBufferSize(){ return (Integer)SETTINGS.get("BufferSize"); }
+    /**
+     * Returns the reciving buffer size.
+     * @return Reciving buffer size
+     */
+    public static Integer getRecvBufferSize(){ return (Integer)SETTINGS.get("RecvBufferSize"); }
+
+    /**
+     * Returns the sending buffer size.
+     * @return Sending buffer size
+     */
+    public static Integer getSendBufferSize(){ return (Integer)SETTINGS.get("SendBufferSize"); }
 
 	/**
 	 * Returns the port to use.

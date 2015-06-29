@@ -6,7 +6,8 @@ import java.nio.ByteBuffer;
 
 public class Peer {
 
-    public ByteBuffer buffer = ByteBuffer.allocate(Configuration.getBufferSize());
+    public ByteBuffer outBuffer = ByteBuffer.allocate(Configuration.getSendBufferSize());
+    public ByteBuffer inBuffer = ByteBuffer.allocate(Configuration.getRecvBufferSize());
     public PeerConnection connection;
 
 }

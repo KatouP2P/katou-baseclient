@@ -32,10 +32,12 @@ public class TCPServer implements Server {
 
             @Override
             public void completed(AsynchronousSocketChannel channel, Peer peer){
-                peer.connection = new PeerConnection(channel, peer);
-                PeerManager.get().registerPeer(peer);
-                System.out.println("Accepted new connection and registered peer from " + peer.connection.getAddress());
-                channel.read(peer.buffer, peer, new ReadCompletionHandler());
+                try {
+                    peer.connection = new PeerConnection(channel, channel.getRemoteAddress(), peer);
+                } catch (IOException e){
+                    // TODO: handle
+                }
+
 
                 synchronized(LOCK_OBJECT){
                     LOCK_OBJECT.notifyAll();
@@ -64,6 +66,26 @@ public class TCPServer implements Server {
         channelThreadGroup.shutdownNow();
     }
 
+    private class AuthenticateConnectionHandler implements CompletionHandler<Integer, Peer> {
+
+
+        @Override
+        public void completed(Integer numBytesRead, Peer peer){
+
+            PeerManager.get().registerPeer(peer);
+            System.out.println("Accepted new connection and registered peer from " + peer.connection.getAddress());
+
+            peer.connection.getChannel().read(peer.inBuffer, peer, new ReadCompletionHandler());
+        }
+
+
+        @Override
+        public void failed(Throwable exc, Peer attachment){
+            exc.printStackTrace(); // TODO: Handle
+        }
+
+    }
+
     private class ReadCompletionHandler implements CompletionHandler<Integer, Peer> {
 
         @Override
@@ -71,15 +93,15 @@ public class TCPServer implements Server {
             if(numBytesRead == -1){
                 peer.connection.disconnect();
             } else {
-                peer.buffer.flip(); // For the love of god, never forget to call flip().
+                peer.inBuffer.flip(); // For the love of god, never forget to call flip().
 
                 byte[] b = new byte[numBytesRead];
-                peer.buffer.get(b);
+                peer.inBuffer.get(b);
                 // TODO: do something with data rather than just outputting what we got
                 System.out.println(peer.connection.getAddress() + " says: " + new String(b, StandardCharsets.UTF_8));
-                peer.buffer.clear();
+                peer.inBuffer.clear();
 
-                peer.connection.getChannel().read(peer.buffer, peer, this);
+                ((AsynchronousSocketChannel)peer.connection.getChannel()).read(peer.inBuffer, peer, this);
             }
         }
 
