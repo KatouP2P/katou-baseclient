@@ -71,11 +71,11 @@ public class TCPServer implements Server {
 
         @Override
         public void completed(Integer numBytesRead, Peer peer){
-
             PeerManager.get().registerPeer(peer);
-            System.out.println("Accepted new connection and registered peer from " + peer.connection.getAddress());
+            System.out.println("Accepted new connection from " + peer.connection.getAddress() + ". Authenticating...");
 
-            peer.connection.getChannel().read(peer.inBuffer, peer, new ReadCompletionHandler());
+            System.out.println("Successful authentication from " + peer.connection.getAddress() + ".");
+            ((AsynchronousSocketChannel)peer.connection.getChannel()).read(peer.inBuffer, peer, new ReadCompletionHandler());
         }
 
 
