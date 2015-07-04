@@ -14,7 +14,7 @@ public class MemoryChunk extends RepresentableChunk {
 	/**
 	 * The buffer for the data downloaded/read from a peer or file.
 	 */
-	private ByteBuffer buffer;
+	private ByteBuffer data;
 
 	/**
 	 * Constructs a MemoryChunk with the given size.
@@ -23,32 +23,39 @@ public class MemoryChunk extends RepresentableChunk {
 	 */
 	public MemoryChunk(int id, int size){
 		super(id, size);
-		this.buffer = ByteBuffer.allocateDirect(size); // Direct buffers are more efficient at I/O.
+		this.data = ByteBuffer.allocateDirect(size); // Direct buffers are more efficient at I/O.
 	}
 
 	/**
-	 * Gets the current buffer.
-	 * @return The buffer.
+	 * Gets the current data.
+	 * @return The data.
 	 */
-	public ByteBuffer getBuffer(){
-		return buffer;
+	public ByteBuffer getData(){
+		return data;
 	}
 
 	@Override
 	public void transferFrom(Peer peer) throws IOException{
-		peer.connection.readBytes(buffer, getSize());
+		ByteBuffer len = ByteBuffer.allocate(Integer.BYTES);
+		peer.connection.recv(len);
+
+		this.data = ByteBuffer.allocateDirect(data.getInt());
+		peer.connection.recv(this.data);
 	}
 
 	@Override
 	public void transferTo(Peer peer) throws IOException{
-		peer.connection.writeBytes(buffer, getSize());
+		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + getSize());
+		buffer.putInt(getSize());
+		buffer.put(this.data);
+
+		peer.connection.send(buffer);
 	}
 
 	@Override
 	public boolean validate(long crc32){
 		CRC32 checksum = new CRC32();
-		// THIS WILL ERROR: TODO: DO SOMETHING
-		checksum.update(buffer);
+		checksum.update(data);
 		return checksum.getValue() == crc32;
 	}
 

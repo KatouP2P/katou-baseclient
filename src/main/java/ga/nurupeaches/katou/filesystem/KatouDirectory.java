@@ -6,14 +6,16 @@ import ga.nurupeaches.katou.network.peer.Peer;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /*
-  * Network Format:
-  * ----------------------------------------------------------
-  * | Name Length | Name | Amount of KatouFiles | KatouFiles |
-  * ----------------------------------------------------------
+ * Network Format:
+ * ----------------------------------------------------------
+ * | Name Length | Name | Amount of KatouFiles | KatouFiles |
+ * ----------------------------------------------------------
  */
 public class KatouDirectory implements Transmittable, Serializable {
 
@@ -58,8 +60,17 @@ public class KatouDirectory implements Transmittable, Serializable {
             throw new IOException("peer cannot be null!");
         }
 
-        peer.connection.writeString(directoryName);
-        peer.connection.writeInt(files.size());
+        byte[] directoryNameBytes = directoryName.getBytes(StandardCharsets.UTF_8);
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + directoryNameBytes.length + Integer.BYTES);
+        // write directory name
+        buffer.putInt(directoryNameBytes.length);
+        buffer.put(directoryNameBytes);
+        // write the amount of files
+        buffer.putInt(files.size());
+        // ship out the first package of data
+        peer.connection.send(buffer);
+
+        // now transfer the rest out
         for(KatouFile info : files.values()){
             info.transferTo(peer);
         }
@@ -71,8 +82,18 @@ public class KatouDirectory implements Transmittable, Serializable {
             throw new IOException("peer cannot be null!");
         }
 
-        directoryName = peer.connection.readString();
-        int amount = peer.connection.readInt();
+        ByteBuffer directoryNameLength = ByteBuffer.allocate(Integer.BYTES);
+        peer.connection.recv(directoryNameLength);
+        int directoryNameLen = directoryNameLength.getInt();
+
+        ByteBuffer buffer = ByteBuffer.allocate(directoryNameLen + Integer.BYTES);
+        peer.connection.recv(buffer);
+
+        byte[] directoryNameBytes = new byte[directoryNameLen];
+        buffer.get(directoryNameBytes);
+        directoryName = new String(directoryNameBytes, StandardCharsets.UTF_8);
+
+        int amount = buffer.getInt();
         KatouFile info;
         for(int i=0; i < amount; i++){
             info = new KatouFile();

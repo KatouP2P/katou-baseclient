@@ -6,19 +6,20 @@ import ga.nurupeaches.katou.network.peer.PeerManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousServerSocketChannel;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.channels.CompletionHandler;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Listens and accepts incoming TCP connections.
  */
 public class TCPServer implements Server {
 
+    // Measured in seconds.
+    private final int TIMEOUT = 30;
     private final AsynchronousChannelGroup channelThreadGroup = AsynchronousChannelGroup.withFixedThreadPool(
-            Runtime.getRuntime().availableProcessors() / 2, Thread::new);
+            Runtime.getRuntime().availableProcessors(), Thread::new);
     private final AsynchronousServerSocketChannel serverSocketChannel;
     private final Object LOCK_OBJECT = new Object();
 
@@ -28,28 +29,7 @@ public class TCPServer implements Server {
 
     @Override
     public void tick(){
-        serverSocketChannel.accept(new Peer(), new CompletionHandler<AsynchronousSocketChannel, Peer>() {
-
-            @Override
-            public void completed(AsynchronousSocketChannel channel, Peer peer){
-                try {
-                    peer.connection = new PeerConnection(channel, channel.getRemoteAddress(), peer);
-                } catch (IOException e){
-                    // TODO: handle
-                }
-
-
-                synchronized(LOCK_OBJECT){
-                    LOCK_OBJECT.notifyAll();
-                }
-            }
-
-            @Override
-            public void failed(Throwable throwable, Peer peer){
-                throwable.printStackTrace(); // TODO: Handle
-            }
-
-        });
+        serverSocketChannel.accept(new Peer(), new NewConnectionHandler());
 
         synchronized(LOCK_OBJECT){
             try {
@@ -66,49 +46,84 @@ public class TCPServer implements Server {
         channelThreadGroup.shutdownNow();
     }
 
-    private class AuthenticateConnectionHandler implements CompletionHandler<Integer, Peer> {
-
-
-        @Override
-        public void completed(Integer numBytesRead, Peer peer){
-            PeerManager.get().registerPeer(peer);
-            System.out.println("Accepted new connection from " + peer.connection.getAddress() + ". Authenticating...");
-
-            System.out.println("Successful authentication from " + peer.connection.getAddress() + ".");
-            ((AsynchronousSocketChannel)peer.connection.getChannel()).read(peer.inBuffer, peer, new ReadCompletionHandler());
-        }
-
+    private class NewConnectionHandler implements CompletionHandler<AsynchronousSocketChannel, Peer> {
 
         @Override
-        public void failed(Throwable exc, Peer attachment){
-            exc.printStackTrace(); // TODO: Handle
-        }
+        public void completed(AsynchronousSocketChannel channel, Peer peer){
+            ByteBuffer buffer = ByteBuffer.allocate(32);
+            try {
+                peer.connection = new PeerConnection(channel, channel.getRemoteAddress(), peer);
+                channel.read(buffer, TIMEOUT, TimeUnit.SECONDS, peer, new AuthenticateConnectionHandler(channel, buffer));
+            } catch(InterruptedByTimeoutException e){
+                try {
+                    System.out.println("[thread-" + Thread.currentThread().getId() + "] Client from " + channel.getRemoteAddress() + " failed to respond within 30 seconds.");
+                    channel.close();
+                } catch(IOException e1){
+                    // TODO: handle
+                }
+            } catch(IOException e){
+                // TODO: handle
+            }
 
-    }
-
-    private class ReadCompletionHandler implements CompletionHandler<Integer, Peer> {
-
-        @Override
-        public void completed(Integer numBytesRead, Peer peer){
-            if(numBytesRead == -1){
-                peer.connection.disconnect();
-            } else {
-                peer.inBuffer.flip(); // For the love of god, never forget to call flip().
-
-                byte[] b = new byte[numBytesRead];
-                peer.inBuffer.get(b);
-                // TODO: do something with data rather than just outputting what we got
-                System.out.println(peer.connection.getAddress() + " says: " + new String(b, StandardCharsets.UTF_8));
-                peer.inBuffer.clear();
-
-                ((AsynchronousSocketChannel)peer.connection.getChannel()).read(peer.inBuffer, peer, this);
+            synchronized(LOCK_OBJECT){
+                LOCK_OBJECT.notifyAll();
             }
         }
 
         @Override
+        public void failed(Throwable throwable, Peer peer){
+            throwable.printStackTrace(); // TODO: Handle
+
+            synchronized(LOCK_OBJECT){
+                LOCK_OBJECT.notifyAll();
+            }
+        }
+
+    }
+
+    private class AuthenticateConnectionHandler implements CompletionHandler<Integer, Peer> {
+
+        private final ByteBuffer buffer;
+        private final AsynchronousSocketChannel channel;
+
+        public AuthenticateConnectionHandler(AsynchronousSocketChannel channel, ByteBuffer buffer){
+            this.buffer = buffer;
+            this.channel = channel;
+        }
+
+        @Override
+        public void completed(Integer numBytesRead, Peer peer){
+            System.out.println("[thread-" + Thread.currentThread().getId() + "] Accepted new connection from " + peer.connection.getAddress() + ". Authenticating...");
+
+            String version = new String(buffer.array(), StandardCharsets.UTF_8);
+            if(version.isEmpty() || !version.startsWith("Katou")){
+                System.out.println("[thread-" + Thread.currentThread().getId() + "] Non-Katou client tried to connect from " + peer.connection.getAddress());
+                try {
+                    channel.close();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+                return;
+            }
+
+            System.out.println("[thread-" + Thread.currentThread().getId() + "] Successful authentication from " + peer.connection.getAddress() + " using client " +
+                        new String(buffer.array(), StandardCharsets.UTF_8));
+
+            PeerManager.get().registerPeer(peer);
+        }
+
+
+        @Override
         public void failed(Throwable exc, Peer attachment){
             exc.printStackTrace(); // TODO: Handle
+
+            try {
+                channel.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
         }
+
     }
 
 }

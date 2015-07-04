@@ -182,13 +182,6 @@ public final class Configuration {
 	}
 
 	/**
-	 * Returns the character set to use for parsing Strings.
-	 * @return UTF-8 charset if was set to default.
-	 */	public static Charset getCharset(){
-		return StandardCharsets.UTF_8;
-	}
-
-	/**
 	 * Returns the default save location as a File object.
 	 * @return A file representing the default save location.
 	 */

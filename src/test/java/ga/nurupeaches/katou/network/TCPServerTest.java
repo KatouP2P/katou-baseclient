@@ -55,8 +55,8 @@ public class TCPServerTest extends TestCase {
 
             Random random = new Random();
             for(Socket socket : sockets){
-                StringBuilder builder = new StringBuilder();
-                for(int i=0; i < 20; i++){
+                StringBuilder builder = new StringBuilder("Katou");
+                for(int i=0; i < 3; i++){
                     builder.append(randomStrings[random.nextInt(randomStrings.length)]);
                 }
 

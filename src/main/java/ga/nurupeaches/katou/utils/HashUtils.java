@@ -1,11 +1,11 @@
 package ga.nurupeaches.katou.utils;
 
-import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.KatouClient;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +42,7 @@ public final class HashUtils {
 	 * @return The digest in a byte array
 	 */
 	public static byte[] computeHash(String string){
-		return computeHash(string.getBytes(Configuration.getCharset()));
+		return computeHash(string.getBytes(StandardCharsets.UTF_8));
 	}
 
 	/**
