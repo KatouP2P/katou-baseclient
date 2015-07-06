@@ -22,7 +22,7 @@ public class UDPChannel implements IOChannel {
 
     @Override
     public void recv(ByteBuffer buffer) throws IOException {
-        throw new IOException("Can't call recv() on a UDP socket!");
+        channel.receive(buffer);
     }
 
     @Override
