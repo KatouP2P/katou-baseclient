@@ -2,6 +2,7 @@ package ga.nurupeaches.katou.network;
 
 import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.server.Server;
+import ga.nurupeaches.katou.network.server.TCPServer;
 import ga.nurupeaches.katou.network.server.UDPServer;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -9,12 +10,13 @@ import org.junit.Test;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
-public class UDPServerTest extends TestCase {
+public class CombinedServerTest extends TestCase {
 
-    private Server server;
+    private Server tcpServer, udpServer;
     private static final int PORT = 8080;
 
     // Not a list of waifus, I swear!
@@ -25,44 +27,75 @@ public class UDPServerTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        server = new UDPServer(PORT);
+        tcpServer = new TCPServer(PORT);
+        udpServer = new UDPServer(PORT);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        server.close();
+        tcpServer.close();
+        udpServer.close();
         Configuration.saveConfig();
     }
 
     @Test
     public void testTick() throws Exception {
-        Thread thread = new Thread(() -> {
+        Thread tcpThread = new Thread(() -> {
             try {
                 while(true){
-                    server.tick();
+                    tcpServer.tick();
                 }
             } catch (Exception e){
                 e.printStackTrace();
             }
         });
-        thread.start();
+        tcpThread.start();
+
+        Thread udpThread = new Thread(() -> {
+            try {
+                while(true){
+                    udpServer.tick();
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        });
+        udpThread.start();
 
         try {
-            DatagramSocket[] sockets = {
+            DatagramSocket[] udpSockets = {
                     new DatagramSocket(),
                     new DatagramSocket(),
                     new DatagramSocket(),
             };
 
+            Socket[] tcpSockets = {
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+            };
+
             Random random = new Random();
-            for(DatagramSocket socket : sockets){
+            byte[][] strings = new byte[3][];
+            for(int i=0; i < strings.length; i++){
                 StringBuilder builder = new StringBuilder("Katou");
-                for(int i=0; i < 3; i++){
+                for(int x=0; x < 3; x++){
                     builder.append(randomStrings[random.nextInt(randomStrings.length)]);
                 }
 
-                byte[] bytes = builder.toString().getBytes(StandardCharsets.UTF_8);
-                socket.send(new DatagramPacket(bytes, bytes.length, InetAddress.getLocalHost(), PORT));
+                strings[i] = builder.toString().getBytes(StandardCharsets.UTF_8);
+            }
+
+            int u = 0;
+            for(DatagramSocket socket : udpSockets){
+                socket.send(new DatagramPacket(strings[u], strings[u].length, InetAddress.getLocalHost(), PORT));
+                u++;
+            }
+
+            int t = 0;
+            for(Socket socket : tcpSockets){
+                socket.getOutputStream().write(strings[t]);
+                t++;
             }
         } catch (Exception e){
             e.printStackTrace();

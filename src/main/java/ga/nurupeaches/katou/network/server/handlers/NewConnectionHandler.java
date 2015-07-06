@@ -28,7 +28,7 @@ public class NewConnectionHandler implements CompletionHandler<AsynchronousSocke
             channel.read(buffer, TIMEOUT, TimeUnit.SECONDS, peer, new AuthenticationHandler(channel, buffer));
         } catch(InterruptedByTimeoutException e){
             try {
-                System.out.println("[thread-" + Thread.currentThread().getId() + "] Client from "
+                System.out.println('[' + Thread.currentThread().getName() + "] Client from "
                         + channel.getRemoteAddress() + " failed to respond within 30 seconds.");
 
                 channel.close();

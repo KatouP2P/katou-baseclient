@@ -21,12 +21,12 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
 
     @Override
     public void completed(Integer numBytesRead, Peer peer){
-        System.out.println("[thread-" + Thread.currentThread().getId() + "] Accepted new connection from "
+        System.out.println('[' + Thread.currentThread().getName() + "] Accepted new connection from "
                 + peer.connection.getAddress() + ". Authenticating...");
 
         String version = new String(buffer.array(), StandardCharsets.UTF_8);
         if(version.isEmpty() || !version.startsWith("Katou")){
-            System.out.println("[thread-" + Thread.currentThread().getId() + "] Non-Katou client tried to connect from "
+            System.out.println('[' + Thread.currentThread().getName() + "] Non-Katou client tried to connect from "
                     + peer.connection.getAddress());
 
             try {
@@ -37,7 +37,7 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
             return;
         }
 
-        System.out.println("[thread-" + Thread.currentThread().getId() + "] Successful authentication from "
+        System.out.println('[' + Thread.currentThread().getName() + "] Successful authentication from "
                 + peer.connection.getAddress() + " using client " + version);
 
         PeerManager.get().registerPeer(peer);

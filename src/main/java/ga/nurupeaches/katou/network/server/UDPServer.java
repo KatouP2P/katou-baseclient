@@ -1,6 +1,5 @@
 package ga.nurupeaches.katou.network.server;
 
-import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.peer.Peer;
 import ga.nurupeaches.katou.network.peer.PeerConnection;
 
@@ -21,14 +20,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class UDPServer implements Server {
 
-    private final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors()/2;
+    private final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
     private final AtomicInteger POLLING_COUNT = new AtomicInteger(0);
-    private ExecutorService datagramThreadService = Executors.newFixedThreadPool(MAX_THREAD_COUNT);
-    private DatagramChannel datagramChannel;
+    private final AtomicInteger THREAD_POOL_COUNT = new AtomicInteger(0);
+    private final Object LOCK_OBJECT = new Object();
+    private final ExecutorService datagramThreadService = Executors.newFixedThreadPool(MAX_THREAD_COUNT, runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setName("udp-thread-" + THREAD_POOL_COUNT.getAndIncrement());
+        return thread;
+    });
+    private final DatagramChannel datagramChannel;
 
     public UDPServer(int port) throws IOException{
         datagramChannel = DatagramChannel.open().bind(new InetSocketAddress(port));
-        datagramChannel.configureBlocking(false);
         datagramChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
     }
 
@@ -36,19 +40,19 @@ public class UDPServer implements Server {
     public void tick(){
         if(POLLING_COUNT.get() < MAX_THREAD_COUNT){
             datagramThreadService.submit(() -> {
-                ByteBuffer anonRecvBuffer = ByteBuffer.allocate(Configuration.getRecvBufferSize());
+                ByteBuffer anonRecvBuffer = ByteBuffer.allocate(32);
                 try {
                     SocketAddress address = datagramChannel.receive(anonRecvBuffer);
                     if(address == null){
                         return;
                     }
 
-                    System.out.println("[thread-" + Thread.currentThread().getId() + "] Accepted new connection from "
+                    System.out.println('[' + Thread.currentThread().getName() + "] Accepted new connection from "
                             + address + ". Authenticating...");
                     String ver = new String(anonRecvBuffer.array(), StandardCharsets.UTF_8);
                     if(ver.isEmpty() || !ver.startsWith("Katou")){
-                        System.out.println("[thread-" + Thread.currentThread().getId() + "] Non-Katou client tried to " +
-                                "connect from " + address);
+                        System.out.println('[' + Thread.currentThread().getName() + "] Non-Katou client tried to " +
+                                "connect from " + address + ";dbg,ver=" + ver);
                     } else {
                         DatagramChannel peerChannel;
                         peerChannel = DatagramChannel.open();
@@ -58,7 +62,7 @@ public class UDPServer implements Server {
 
                         Peer peer = new Peer();
                         peer.connection = new PeerConnection(peerChannel, address, peer);
-                        System.out.println("[thread-" + Thread.currentThread().getId() + "] Successful authentication " +
+                        System.out.println('[' + Thread.currentThread().getName() + "] Successful authentication " +
                                 "from " + peer.connection.getAddress() + " using client " + ver);
                     }
                 } catch (IOException e){
@@ -66,8 +70,22 @@ public class UDPServer implements Server {
                 } finally {
                     POLLING_COUNT.decrementAndGet();
                     anonRecvBuffer.clear();
+
+                    synchronized(LOCK_OBJECT){
+                        LOCK_OBJECT.notify();
+                    }
                 }
             });
+
+            POLLING_COUNT.incrementAndGet();
+        } else {
+            synchronized(LOCK_OBJECT){
+                try {
+                    LOCK_OBJECT.wait();
+                } catch (InterruptedException e){
+                    e.printStackTrace(); // TODO: Handle
+                }
+            }
         }
     }
 

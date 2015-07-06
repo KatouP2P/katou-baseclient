@@ -7,17 +7,23 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Listens and accepts incoming TCP connections.
  */
 public class TCPServer implements Server {
 
-    private final AsynchronousChannelGroup channelThreadGroup = AsynchronousChannelGroup.withFixedThreadPool(
-            Runtime.getRuntime().availableProcessors(), Thread::new);
     private final AsynchronousServerSocketChannel serverSocketChannel;
+    private final AtomicInteger THREAD_POOL_COUNT = new AtomicInteger(0);
     private final Object LOCK_OBJECT = new Object();
-
+    private final AsynchronousChannelGroup channelThreadGroup = AsynchronousChannelGroup.withFixedThreadPool(
+            Runtime.getRuntime().availableProcessors(), runnable -> {
+                Thread thread = new Thread(runnable);
+                thread.setName("tcp-thread-" + THREAD_POOL_COUNT.getAndIncrement());
+                return thread;
+            }
+    );
 
     public TCPServer(int port) throws IOException {
         serverSocketChannel = AsynchronousServerSocketChannel.open(channelThreadGroup).bind(new InetSocketAddress(port));
