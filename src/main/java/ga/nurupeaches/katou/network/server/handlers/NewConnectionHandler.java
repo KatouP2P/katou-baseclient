@@ -2,6 +2,7 @@ package ga.nurupeaches.katou.network.server.handlers;
 
 import ga.nurupeaches.katou.network.peer.Peer;
 import ga.nurupeaches.katou.network.peer.PeerConnection;
+import ga.nurupeaches.katou.network.server.Server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -15,29 +16,34 @@ public class NewConnectionHandler implements CompletionHandler<AsynchronousSocke
     // Measured in seconds.
     private static final int TIMEOUT = 30;
     private final Object lockingObject;
+    private Server server;
 
-    public NewConnectionHandler(Object lock){
+    public NewConnectionHandler(Server server, Object lock){
+        this.server = server;
         this.lockingObject = lock;
     }
 
     @Override
     public void completed(AsynchronousSocketChannel channel, Peer peer){
         ByteBuffer buffer = ByteBuffer.allocate(32);
-        try {
-            peer.connection = new PeerConnection(channel, channel.getRemoteAddress(), peer);
-            channel.read(buffer, TIMEOUT, TimeUnit.SECONDS, peer, new AuthenticationHandler(channel, buffer));
-        } catch(InterruptedByTimeoutException e){
-            try {
-                System.out.println('[' + Thread.currentThread().getName() + "] Client from "
-                        + channel.getRemoteAddress() + " failed to respond within 30 seconds.");
 
-                channel.close();
-            } catch(IOException e1){
+//        server.getService().submit(() -> {
+            try {
+                peer.connection = new PeerConnection(channel, channel.getRemoteAddress(), peer);
+                channel.read(buffer, TIMEOUT, TimeUnit.SECONDS, peer, new AuthenticationHandler(channel, buffer));
+            } catch(InterruptedByTimeoutException e){
+                try {
+                    System.out.println('[' + Thread.currentThread().getName() + "] Client from "
+                            + channel.getRemoteAddress() + " failed to respond within 30 seconds.");
+
+                    channel.close();
+                } catch(IOException e1){
+                    // TODO: handle
+                }
+            } catch(IOException e){
                 // TODO: handle
             }
-        } catch(IOException e){
-            // TODO: handle
-        }
+//        });
 
         synchronized(lockingObject){
             lockingObject.notifyAll();

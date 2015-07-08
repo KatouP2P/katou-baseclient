@@ -26,6 +26,8 @@ public class KatouDirectory implements Transmittable, Serializable {
     private Map<String, KatouDirectory> subdirectories;
     private String directoryName;
 
+    public KatouDirectory(){}
+
     public KatouDirectory(String dir){
         this(new File(dir));
     }
@@ -53,6 +55,8 @@ public class KatouDirectory implements Transmittable, Serializable {
             files.put(subfile.getName(), KatouFile.fromFile(subfile));
         }
     }
+
+    // TODO: verify transferTo() and transferFrom() correlate. also, support subdirectories.
 
     @Override
     public void transferTo(Peer peer) throws IOException {

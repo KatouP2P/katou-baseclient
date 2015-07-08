@@ -51,12 +51,57 @@ public class TCPServerTest extends TestCase {
                     new Socket(InetAddress.getLocalHost(), PORT),
                     new Socket(InetAddress.getLocalHost(), PORT),
                     new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
+                    new Socket(InetAddress.getLocalHost(), PORT),
             };
 
             Random random = new Random();
             for(Socket socket : sockets){
                 StringBuilder builder = new StringBuilder("Katou");
-                for(int i=0; i < 3; i++){
+                for(int i=0; i < 4; i++){
                     builder.append(randomStrings[random.nextInt(randomStrings.length)]);
                 }
 

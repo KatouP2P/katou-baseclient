@@ -26,6 +26,8 @@ public class MemoryChunk extends RepresentableChunk {
 		this.data = ByteBuffer.allocateDirect(size); // Direct buffers are more efficient at I/O.
 	}
 
+	public MemoryChunk(){}
+
 	/**
 	 * Gets the current data.
 	 * @return The data.
@@ -36,20 +38,23 @@ public class MemoryChunk extends RepresentableChunk {
 
 	@Override
 	public void transferFrom(Peer peer) throws IOException{
-		ByteBuffer len = ByteBuffer.allocate(Integer.BYTES);
-		peer.connection.recv(len);
+		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
+		peer.connection.recv(buffer);
 
-		this.data = ByteBuffer.allocateDirect(data.getInt());
+		setId(buffer.getInt());
+		setSize(buffer.getInt());
+		data = ByteBuffer.allocateDirect(getSize());
+
 		peer.connection.recv(this.data);
 	}
 
 	@Override
 	public void transferTo(Peer peer) throws IOException{
-		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + getSize());
+		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
+		buffer.putInt(getId());
 		buffer.putInt(getSize());
-		buffer.put(this.data);
-
 		peer.connection.send(buffer);
+		peer.connection.send(data);
 	}
 
 	@Override

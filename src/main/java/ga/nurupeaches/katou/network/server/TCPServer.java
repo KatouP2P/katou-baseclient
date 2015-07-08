@@ -7,31 +7,28 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Listens and accepts incoming TCP connections.
  */
 public class TCPServer implements Server {
 
-    private final AsynchronousServerSocketChannel serverSocketChannel;
-    private final AtomicInteger THREAD_POOL_COUNT = new AtomicInteger(0);
+    private final AsynchronousServerSocketChannel socketChannel;
     private final Object LOCK_OBJECT = new Object();
-    private final AsynchronousChannelGroup channelThreadGroup = AsynchronousChannelGroup.withFixedThreadPool(
-            Runtime.getRuntime().availableProcessors(), runnable -> {
-                Thread thread = new Thread(runnable);
-                thread.setName("tcp-thread-" + THREAD_POOL_COUNT.getAndIncrement());
-                return thread;
-            }
-    );
+
+    private final ExecutorService socketThreadService = new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
+            new NamedForkJoinWorkerThreadFactory("tcp-thread-"), null, true);
+    private final AsynchronousChannelGroup socketThreadGroup = AsynchronousChannelGroup.withThreadPool(socketThreadService);
 
     public TCPServer(int port) throws IOException {
-        serverSocketChannel = AsynchronousServerSocketChannel.open(channelThreadGroup).bind(new InetSocketAddress(port));
+        socketChannel = AsynchronousServerSocketChannel.open(socketThreadGroup).bind(new InetSocketAddress(port));
     }
 
     @Override
     public void tick(){
-        serverSocketChannel.accept(new Peer(), new NewConnectionHandler(LOCK_OBJECT));
+        socketChannel.accept(new Peer(), new NewConnectionHandler(this, LOCK_OBJECT));
 
         synchronized(LOCK_OBJECT){
             try {
@@ -43,9 +40,14 @@ public class TCPServer implements Server {
     }
 
     @Override
+    public ExecutorService getService(){
+        return socketThreadService;
+    }
+
+    @Override
     public void close() throws IOException {
-        serverSocketChannel.close();
-        channelThreadGroup.shutdownNow();
+        socketChannel.close();
+        socketThreadGroup.shutdownNow();
     }
 
 }

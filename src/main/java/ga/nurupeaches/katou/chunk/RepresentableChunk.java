@@ -17,9 +17,15 @@ public abstract class RepresentableChunk implements Chunk {
         this.chunkSize = size;
     }
 
+    public RepresentableChunk(){}
+
     @Override
     public int getId(){
         return id;
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 
     @Override
@@ -27,4 +33,7 @@ public abstract class RepresentableChunk implements Chunk {
         return chunkSize;
     }
 
+    public void setSize(int id){
+        chunkSize = id;
+    }
 }

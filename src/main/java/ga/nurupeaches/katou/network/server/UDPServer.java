@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,13 +22,9 @@ public class UDPServer implements Server {
 
     private final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
     private final AtomicInteger POLLING_COUNT = new AtomicInteger(0);
-    private final AtomicInteger THREAD_POOL_COUNT = new AtomicInteger(0);
     private final Object LOCK_OBJECT = new Object();
-    private final ExecutorService datagramThreadService = Executors.newFixedThreadPool(MAX_THREAD_COUNT, runnable -> {
-        Thread thread = new Thread(runnable);
-        thread.setName("udp-thread-" + THREAD_POOL_COUNT.getAndIncrement());
-        return thread;
-    });
+    private final ExecutorService datagramThreadService = new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
+            new NamedForkJoinWorkerThreadFactory("udp-thread-"), null, true);
     private final DatagramChannel datagramChannel;
 
     public UDPServer(int port) throws IOException{
@@ -87,6 +83,11 @@ public class UDPServer implements Server {
                 }
             }
         }
+    }
+
+    @Override
+    public ExecutorService getService(){
+        return datagramThreadService;
     }
 
     @Override
