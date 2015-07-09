@@ -10,6 +10,9 @@ import java.nio.channels.FileLock;
 import java.util.logging.Level;
 import java.util.zip.CRC32;
 
+/**
+ * Represents a chunk of a file on disk.
+ */
 public class FileChunk extends RepresentableChunk {
 
     private AsynchronousFileChannel fileChannel;
@@ -29,17 +32,17 @@ public class FileChunk extends RepresentableChunk {
 
     @Override
     public void transferFrom(Peer peer) throws IOException{
-
+        // TODO: impl
     }
 
     @Override
     public void transferTo(Peer peer) throws IOException{
-
+        // TODO: impl
     }
 
     @Override
     public boolean validate(long crc32){
-        ByteBuffer buffer = ByteBuffer.allocate(getSize());
+        ByteBuffer buffer = ByteBuffer.allocate((int)getSize());
 
         try {
             FileLock lock = fileChannel.tryLock(index, getSize(), false);

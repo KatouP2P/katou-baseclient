@@ -57,7 +57,8 @@ public final class HashUtils {
 		try {
 			stream = new FileInputStream(file);
 			digestingStream = new DigestInputStream(stream, DIGEST);
-			while(digestingStream.read() != -1);
+			byte[] tmp = new byte[4096];
+			while(digestingStream.read(tmp, 0, 1024) != -1);
 			return DIGEST.digest();
 		} catch (IOException e){
 			KatouClient.LOGGER.log(Level.WARNING, "Failed to calculate hash for file " + file, e);

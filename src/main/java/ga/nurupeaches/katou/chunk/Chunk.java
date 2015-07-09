@@ -13,7 +13,7 @@ public interface Chunk extends Transmittable {
 	 */
 	public int getId();
 
-	public int getSize();
+	public long getSize();
 
 	/**
 	 * Validates the chunk and returns whether or not if it was valid.

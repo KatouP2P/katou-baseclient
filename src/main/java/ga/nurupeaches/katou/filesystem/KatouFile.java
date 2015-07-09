@@ -2,12 +2,13 @@ package ga.nurupeaches.katou.filesystem;
 
 import ga.nurupeaches.katou.network.Transmittable;
 import ga.nurupeaches.katou.network.peer.Peer;
+import ga.nurupeaches.katou.utils.BufferUtils;
 import ga.nurupeaches.katou.utils.HashUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /*
  * Network Format:
@@ -18,11 +19,15 @@ import java.nio.charset.StandardCharsets;
 public class KatouFile implements Transmittable {
 
     public static final int HASH_SIZE = 32;
-    private String name;
+    private char[] name;
     private long size;
     private byte[] hash;
 
-    public KatouFile(String name, long size, byte[] hash){
+    public KatouFile(String str, long size, byte[] hash){
+        this(str.toCharArray(), size, hash);
+    }
+
+    public KatouFile(char[] name, long size, byte[] hash){
         this.name = name;
         this.size = size;
         this.hash = hash;
@@ -32,13 +37,13 @@ public class KatouFile implements Transmittable {
 
     public static KatouFile fromFile(File file){
         KatouFile katouFile = new KatouFile();
-        katouFile.name = file.getName();
+        katouFile.name = file.getName().toCharArray();
         katouFile.size = file.length();
         katouFile.hash = HashUtils.computeHash(file);
         return katouFile;
     }
 
-    public String getName(){
+    public char[] getName(){
         return name;
     }
 
@@ -56,11 +61,13 @@ public class KatouFile implements Transmittable {
             throw new IOException("peer cannot be null!");
         }
 
-        byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + nameBytes.length + Long.BYTES + HASH_SIZE);
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + (name.length * Character.BYTES) + Long.BYTES + HASH_SIZE);
         // put the name of the file
-        buffer.putInt(nameBytes.length);
-        buffer.put(nameBytes);
+        buffer.putInt(name.length);
+
+        // write out the chars for the name;
+        BufferUtils.copyCharsToBuffer(name, buffer);
+
         // put size
         buffer.putLong(size);
         // put the hash of the file
@@ -74,23 +81,26 @@ public class KatouFile implements Transmittable {
             throw new IOException("peer cannot be null!");
         }
 
-        // ugh, have to read the name length first because of how poorly i designed this :^)
-        ByteBuffer nameLenBuffer = ByteBuffer.allocate(Integer.BYTES);
-        peer.connection.recv(nameLenBuffer);
-        int nameLen = nameLenBuffer.getInt();
-        // now let's buffer the rest of the information in.
-        ByteBuffer buffer = ByteBuffer.allocate(nameLen + Long.BYTES + HASH_SIZE);
-        peer.connection.recv(buffer);
-        // and then parse it out into our variables...
         // name first
-        byte[] nameBytes = new byte[nameLen];
-        buffer.get(nameBytes);
-        name = new String(nameBytes, StandardCharsets.UTF_8);
+        int nameLen = peer.IN_BUFFER.getInt();
+        name = new char[nameLen];
+        BufferUtils.readBufferToChars(name, peer.IN_BUFFER, nameLen);
+
         // then size
-        size = buffer.getLong();
+        size = peer.IN_BUFFER.getLong();
+
         // and then the hash
         hash = new byte[HASH_SIZE];
-        buffer.get(hash);
+        peer.IN_BUFFER.get(hash);
     }
 
+    @Override
+    public long getSize(){
+        return Integer.BYTES + name.length * Character.BYTES + Long.BYTES + HASH_SIZE;
+    }
+
+    @Override
+    public String toString(){
+        return "KatouFile{name=" + new String(name) + ",size=" + size + ",hash=" + Arrays.toString(hash) + '}';
+    }
 }

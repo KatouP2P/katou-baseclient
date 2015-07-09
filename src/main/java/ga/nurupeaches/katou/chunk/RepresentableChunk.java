@@ -1,11 +1,14 @@
 package ga.nurupeaches.katou.chunk;
 
+/**
+ * A chunk that has an ID and size.
+ */
 public abstract class RepresentableChunk implements Chunk {
 
     /**
      * Size of this chunk.
      */
-    private int chunkSize;
+    private long chunkSize;
 
     /**
      * ID of this chunk.
@@ -29,11 +32,11 @@ public abstract class RepresentableChunk implements Chunk {
     }
 
     @Override
-    public int getSize(){
+    public long getSize(){
         return chunkSize;
     }
 
-    public void setSize(int id){
-        chunkSize = id;
+    public void setSize(long size){
+        chunkSize = size;
     }
 }

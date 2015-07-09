@@ -3,6 +3,7 @@ package ga.nurupeaches.katou.network.peer.iochannel;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.concurrent.Future;
 
 public class TCPChannel implements IOChannel {
 
@@ -13,13 +14,13 @@ public class TCPChannel implements IOChannel {
     }
 
     @Override
-    public void send(ByteBuffer buffer){
-        channel.write(buffer);
+    public Future<Integer> send(ByteBuffer buffer){
+        return channel.write(buffer);
     }
 
     @Override
-    public void recv(ByteBuffer buffer){
-        channel.read(buffer);
+    public Future<Integer> recv(ByteBuffer buffer){
+        return channel.read(buffer);
     }
 
     @Override

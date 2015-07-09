@@ -1,8 +1,6 @@
-package ga.nurupeaches.katou.network;
+package ga.nurupeaches.katou.network.server;
 
 import ga.nurupeaches.katou.Configuration;
-import ga.nurupeaches.katou.network.server.Server;
-import ga.nurupeaches.katou.network.server.TCPServer;
 import junit.framework.TestCase;
 import org.junit.Test;
 

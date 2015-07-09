@@ -38,12 +38,9 @@ public class MemoryChunk extends RepresentableChunk {
 
 	@Override
 	public void transferFrom(Peer peer) throws IOException{
-		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
-		peer.connection.recv(buffer);
-
-		setId(buffer.getInt());
-		setSize(buffer.getInt());
-		data = ByteBuffer.allocateDirect(getSize());
+		setId(peer.IN_BUFFER.getInt());
+		setSize(peer.IN_BUFFER.getInt());
+		data = ByteBuffer.allocateDirect((int)getSize());
 
 		peer.connection.recv(this.data);
 	}
@@ -52,7 +49,7 @@ public class MemoryChunk extends RepresentableChunk {
 	public void transferTo(Peer peer) throws IOException{
 		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
 		buffer.putInt(getId());
-		buffer.putInt(getSize());
+		buffer.putInt((int)getSize());
 		peer.connection.send(buffer);
 		peer.connection.send(data);
 	}

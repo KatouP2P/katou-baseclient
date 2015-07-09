@@ -2,12 +2,11 @@ package ga.nurupeaches.katou.filesystem;
 
 import ga.nurupeaches.katou.network.Transmittable;
 import ga.nurupeaches.katou.network.peer.Peer;
+import ga.nurupeaches.katou.utils.BufferUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,14 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * | Name Length | Name | Amount of KatouFiles | KatouFiles |
  * ----------------------------------------------------------
  */
-public class KatouDirectory implements Transmittable, Serializable {
+public class KatouDirectory implements Transmittable {
 
     // Map<FileName, Information>
-    private Map<String, KatouFile> files;
+    private Map<char[], KatouFile> files;
 
     // TODO: Handle transfering of sub-directories.
-    private Map<String, KatouDirectory> subdirectories;
-    private String directoryName;
+    private Map<char[], KatouDirectory> subdirectories;
+    private char[] directoryName;
 
     public KatouDirectory(){}
 
@@ -41,18 +40,25 @@ public class KatouDirectory implements Transmittable, Serializable {
             throw new IllegalArgumentException("dir cannot be anything other than a directory!");
         }
 
-        directoryName = dir.getName();
+        directoryName = dir.getName().toCharArray();
         populateMap(dir);
     }
 
     public void populateMap(File file){
-        for(File subfile : file.listFiles()){
+        if(file == null){
+            throw new NullPointerException();
+        }
+
+        File[] ls = file.listFiles();
+        if(ls == null) return;
+
+        for(File subfile : ls){
             if(subfile.isDirectory()){
-                subdirectories.put(subfile.getName(), new KatouDirectory(subfile));
+                subdirectories.put(subfile.getName().toCharArray(), new KatouDirectory(subfile));
             }
 
             if(files == null) files = new ConcurrentHashMap<>(1);
-            files.put(subfile.getName(), KatouFile.fromFile(subfile));
+            files.put(subfile.getName().toCharArray(), KatouFile.fromFile(subfile));
         }
     }
 
@@ -64,13 +70,15 @@ public class KatouDirectory implements Transmittable, Serializable {
             throw new IOException("peer cannot be null!");
         }
 
-        byte[] directoryNameBytes = directoryName.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + directoryNameBytes.length + Integer.BYTES);
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + (directoryName.length * Character.BYTES) + Integer.BYTES);
+
         // write directory name
-        buffer.putInt(directoryNameBytes.length);
-        buffer.put(directoryNameBytes);
+        buffer.putInt(directoryName.length);
+        BufferUtils.copyCharsToBuffer(directoryName, buffer);
+
         // write the amount of files
         buffer.putInt(files.size());
+
         // ship out the first package of data
         peer.connection.send(buffer);
 
@@ -86,18 +94,12 @@ public class KatouDirectory implements Transmittable, Serializable {
             throw new IOException("peer cannot be null!");
         }
 
-        ByteBuffer directoryNameLength = ByteBuffer.allocate(Integer.BYTES);
-        peer.connection.recv(directoryNameLength);
-        int directoryNameLen = directoryNameLength.getInt();
+        int directoryNameLen = peer.IN_BUFFER.getInt();
+        directoryName = new char[directoryNameLen];
 
-        ByteBuffer buffer = ByteBuffer.allocate(directoryNameLen + Integer.BYTES);
-        peer.connection.recv(buffer);
+        BufferUtils.readBufferToChars(directoryName, peer.IN_BUFFER, directoryNameLen);
 
-        byte[] directoryNameBytes = new byte[directoryNameLen];
-        buffer.get(directoryNameBytes);
-        directoryName = new String(directoryNameBytes, StandardCharsets.UTF_8);
-
-        int amount = buffer.getInt();
+        int amount = peer.IN_BUFFER.getInt();
         KatouFile info;
         for(int i=0; i < amount; i++){
             info = new KatouFile();
@@ -106,4 +108,12 @@ public class KatouDirectory implements Transmittable, Serializable {
         }
     }
 
+    @Override
+    public long getSize() throws IOException{
+        long size = Integer.BYTES + (directoryName.length * Character.BYTES) + Integer.BYTES;
+        for(KatouFile file : files.values()){
+            size += file.getSize();
+        }
+        return size;
+    }
 }

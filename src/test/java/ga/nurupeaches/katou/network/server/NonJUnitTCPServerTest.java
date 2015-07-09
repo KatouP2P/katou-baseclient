@@ -1,7 +1,4 @@
-package ga.nurupeaches.katou.network;
-
-import ga.nurupeaches.katou.network.server.Server;
-import ga.nurupeaches.katou.network.server.TCPServer;
+package ga.nurupeaches.katou.network.server;
 
 import java.net.InetAddress;
 import java.net.Socket;

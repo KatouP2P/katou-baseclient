@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.Channel;
 import java.nio.channels.DatagramChannel;
+import java.util.concurrent.Future;
 
 public class PeerConnection {
 
@@ -47,8 +48,8 @@ public class PeerConnection {
         address = null;
     }
 
-    public void send(ByteBuffer buffer) throws IOException {
-        channel.send(buffer);
+    public Future<Integer> send(ByteBuffer buffer) throws IOException {
+        return channel.send(buffer);
     }
 
     public void recv(ByteBuffer buffer) throws IOException {

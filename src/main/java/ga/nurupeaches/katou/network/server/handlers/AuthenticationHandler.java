@@ -41,6 +41,7 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
                 + peer.connection.getAddress() + " using client " + version);
 
         PeerManager.get().registerPeer(peer);
+        channel.read(peer.IN_BUFFER, peer, new DataHandler(peer.IN_BUFFER));
     }
 
 
