@@ -14,24 +14,26 @@ import java.util.concurrent.TimeUnit;
 
 public class DataHandler implements CompletionHandler<Integer, Peer> {
 
-    private final ByteBuffer BUFFER;
+    private final ByteBuffer buffer;
 
     public DataHandler(ByteBuffer buffer){
-        BUFFER = buffer;
+        this.buffer = buffer;
     }
 
     @Override
     public void completed(Integer result, Peer peer){
-        BUFFER.flip();
+        buffer.flip();
         parseData(peer);
+        if(peer.IN_BUFFER.remaining())
+        ((AsynchronousSocketChannel) peer.connection.getRawChannel()).read(buffer, peer, this);
     }
 
     public void parseData(Peer peer){
-        byte id = BUFFER.get();
-        long size = BUFFER.getLong();
+        byte id = buffer.get();
+        long size = buffer.getLong();
 
         if(size > peer.IN_BUFFER.capacity()){
-            ByteBuffer ext = ByteBuffer.allocate((int)(size - BUFFER.capacity()));
+            ByteBuffer ext = ByteBuffer.allocate((int)(size - buffer.capacity()));
             ((AsynchronousSocketChannel)peer.connection.getRawChannel()).read(ext, 30, TimeUnit.SECONDS, peer, null);
             // todo: handle extension buffers
         }
@@ -60,8 +62,7 @@ public class DataHandler implements CompletionHandler<Integer, Peer> {
             }
         }
 
-        BUFFER.compact();
-        ((AsynchronousSocketChannel)peer.connection.getRawChannel()).read(BUFFER, peer, this);
+        buffer.compact();
     }
 
     @Override
