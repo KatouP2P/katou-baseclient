@@ -8,7 +8,7 @@ public abstract class RepresentableChunk implements Chunk {
     /**
      * Size of this chunk.
      */
-    private long chunkSize;
+    private int chunkSize;
 
     /**
      * ID of this chunk.
@@ -32,11 +32,11 @@ public abstract class RepresentableChunk implements Chunk {
     }
 
     @Override
-    public long getSize(){
+    public int getSize(){
         return chunkSize;
     }
 
-    public void setSize(long size){
+    public void setSize(int size){
         chunkSize = size;
     }
 }

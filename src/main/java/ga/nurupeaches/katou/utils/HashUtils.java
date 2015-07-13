@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 public final class HashUtils {
 
-	private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
 	private static final String DEFAULT_HASH = "SHA-256";
 	private static MessageDigest DIGEST;
 
@@ -58,7 +58,7 @@ public final class HashUtils {
 			stream = new FileInputStream(file);
 			digestingStream = new DigestInputStream(stream, DIGEST);
 			byte[] tmp = new byte[4096];
-			while(digestingStream.read(tmp, 0, 1024) != -1);
+			while(digestingStream.read(tmp, 0, tmp.length) != -1);
 			return DIGEST.digest();
 		} catch (IOException e){
 			KatouClient.LOGGER.log(Level.WARNING, "Failed to calculate hash for file " + file, e);

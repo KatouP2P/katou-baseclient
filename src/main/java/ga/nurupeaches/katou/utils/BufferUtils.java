@@ -18,10 +18,4 @@ public final class BufferUtils {
         }
     }
 
-    public static void writeString(String str, ByteBuffer buffer){
-        char[] chars = str.toCharArray();
-        buffer.putInt(chars.length);
-        copyCharsToBuffer(chars, buffer);
-    }
-
 }

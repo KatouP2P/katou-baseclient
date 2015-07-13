@@ -8,12 +8,14 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.DatagramChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 /**
  * Listens and accepts incoming UDP "connections".
@@ -62,7 +64,7 @@ public class UDPServer implements Server {
                                 "from " + peer.connection.getAddress() + " using client " + ver);
                     }
                 } catch (IOException e){
-                    e.printStackTrace(); // TODO: Handle better
+                    Server.NETWORK_LOGGER.log(Level.SEVERE, "I/O error!", e);
                 } finally {
                     POLLING_COUNT.decrementAndGet();
                     anonRecvBuffer.clear();
@@ -79,10 +81,15 @@ public class UDPServer implements Server {
                 try {
                     LOCK_OBJECT.wait();
                 } catch (InterruptedException e){
-                    e.printStackTrace(); // TODO: Handle
+                    Server.NETWORK_LOGGER.log(Level.SEVERE, "Object lock awoken too early!", e);
                 }
             }
         }
+    }
+
+    @Override
+    public Channel getSocket(){
+        return datagramChannel;
     }
 
     @Override

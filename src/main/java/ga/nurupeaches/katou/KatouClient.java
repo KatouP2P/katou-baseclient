@@ -19,7 +19,7 @@ public class KatouClient {
 
     public static void main(String... args){
         KatouClient client = new KatouClient();
-
+        client.setupNetworking();
     }
 
     public void setupNetworking(){
@@ -32,7 +32,17 @@ public class KatouClient {
     }
 
     public void tick(){
+        try {
+            tcp.tick();
+        } catch (Exception e){
+            LOGGER.log(Level.SEVERE, "tcp tick failed", e);
+        }
 
+        try {
+            udp.tick();
+        } catch (Exception e){
+            LOGGER.log(Level.SEVERE, "udp tick failed", e);
+        }
     }
 
 }

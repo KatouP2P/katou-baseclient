@@ -2,12 +2,14 @@ package ga.nurupeaches.katou.network.server.handlers;
 
 import ga.nurupeaches.katou.network.peer.Peer;
 import ga.nurupeaches.katou.network.peer.PeerManager;
+import ga.nurupeaches.katou.network.server.Server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 
 public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
 
@@ -18,6 +20,7 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
         this.buffer = buffer;
         this.channel = channel;
     }
+
 
     @Override
     public void completed(Integer numBytesRead, Peer peer){
@@ -32,7 +35,7 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
             try {
                 channel.close();
             } catch (IOException e){
-                e.printStackTrace();
+                Server.NETWORK_LOGGER.log(Level.SEVERE, "Failed to close peer channel", e);
             }
             return;
         }
@@ -46,8 +49,8 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
 
 
     @Override
-    public void failed(Throwable exc, Peer attachment){
-        exc.printStackTrace(); // TODO: Handle
+    public void failed(Throwable throwable, Peer peer){
+        Server.NETWORK_LOGGER.log(Level.WARNING, "Encountered error while authenticating", throwable);
 
         try {
             channel.close();

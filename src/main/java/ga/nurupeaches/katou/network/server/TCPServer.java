@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.Channel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import java.util.logging.Level;
 
 /**
  * Listens and accepts incoming TCP connections.
@@ -34,9 +36,14 @@ public class TCPServer implements Server {
             try {
                 LOCK_OBJECT.wait();
             } catch (InterruptedException e){
-                e.printStackTrace(); // TODO: Handle
+                Server.NETWORK_LOGGER.log(Level.SEVERE, "Object lock awoken too early!", e);
             }
         }
+    }
+
+    @Override
+    public Channel getSocket(){
+        return socketChannel;
     }
 
     @Override

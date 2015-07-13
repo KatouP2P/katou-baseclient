@@ -10,6 +10,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.InterruptedByTimeoutException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class NewConnectionHandler implements CompletionHandler<AsynchronousSocketChannel, Peer> {
 
@@ -38,10 +39,10 @@ public class NewConnectionHandler implements CompletionHandler<AsynchronousSocke
 
                     channel.close();
                 } catch(IOException e1){
-                    // TODO: handle
+                    failed(new RuntimeException("Failed to close peer channel", e1), peer);
                 }
             } catch(IOException e){
-                // TODO: handle
+                failed(new RuntimeException("Failed to authenticate peer", e), peer);
             }
 //        });
 
@@ -52,7 +53,7 @@ public class NewConnectionHandler implements CompletionHandler<AsynchronousSocke
 
     @Override
     public void failed(Throwable throwable, Peer peer){
-        throwable.printStackTrace(); // TODO: Handle
+        Server.NETWORK_LOGGER.log(Level.WARNING, "Encountered error while handling new connection", throwable);
 
         synchronized(lockingObject){
             lockingObject.notifyAll();

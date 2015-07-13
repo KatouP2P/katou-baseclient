@@ -1,16 +1,22 @@
 package ga.nurupeaches.katou.network.server;
 
 import java.io.IOException;
+import java.nio.channels.Channel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 public interface Server {
+
+    public static final Logger NETWORK_LOGGER = Logger.getLogger("NETWK");
 
     public void tick();
 
     public void close() throws IOException;
+
+    public Channel getSocket();
 
     public ExecutorService getService();
 
@@ -37,6 +43,6 @@ public interface Server {
             super(pool);
         }
 
-    }
+}
 
 }

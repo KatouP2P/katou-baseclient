@@ -1,12 +1,10 @@
 package ga.nurupeaches.katou.network.peer.iochannel;
 
-import ga.nurupeaches.katou.common.NoFuture;
-
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.DatagramChannel;
-import java.util.concurrent.Future;
 
 public class UDPChannel implements IOChannel {
 
@@ -19,14 +17,15 @@ public class UDPChannel implements IOChannel {
     }
 
     @Override
-    public Future<Integer> send(ByteBuffer buffer) throws IOException {
-        return new NoFuture<>(channel.send(buffer, address));
+    public <A> A write(ByteBuffer[] buffers, A attachment, CompletionHandler<Long, ? super A> completionHandler) throws IOException {
+        channel.write(buffers);
+        return attachment;
     }
 
     @Override
-    public Future<Integer> recv(ByteBuffer buffer) throws IOException {
-        channel.receive(buffer); // recv data
-        return new NoFuture<>(buffer.position());   // if i properly implemented this, it should be at 0 before recv
+    public <A> A read(ByteBuffer[] buffers, A attachment, CompletionHandler<Long, ? super A> completionHandler) throws IOException {
+        channel.read(buffers); // recv data
+        return attachment;   // if i properly implemented this, it should be at 0 before recv
                                                     // and position() should return the amount of data read.
     }
 

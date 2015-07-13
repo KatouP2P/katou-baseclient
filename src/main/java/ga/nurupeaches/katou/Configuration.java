@@ -82,8 +82,8 @@ public final class Configuration {
                     case "characterset":
                         SETTINGS.put("CharacterSet", Charset.forName(setting[1]));
                         break;
-                    case "buffersize":
-                        SETTINGS.put("BufferSize", Integer.parseInt(setting[1]));
+                    case "recvbuffersize":
+                        SETTINGS.put("RecvBufferSize", Integer.parseInt(setting[1]));
                         break;
                     case "defaultsavelocation":
                         Path saveLocation = Paths.get(setting[1]);
@@ -96,6 +96,10 @@ public final class Configuration {
                         }
                         SETTINGS.put("DefaultSaveLocation", saveLocation);
                         break;
+                    case "timeout":{
+                        SETTINGS.put("Timeout", Integer.parseInt(setting[1]));
+                        break;
+                    }
                 }
             });
 		} catch (IOException e){
@@ -149,6 +153,7 @@ public final class Configuration {
 
         putIfAbsent(SETTINGS, "DefaultSaveLocation", defaultSaveDir);
         putIfAbsent(SETTINGS, "RecvBufferSize", 512);
+        putIfAbsent(SETTINGS, "Timeout", 30);
         System.out.println("Loaded defaults");
 	}
 
@@ -161,10 +166,12 @@ public final class Configuration {
 	}
 
     /**
-     * Returns the reciving buffer size.
-     * @return Reciving buffer size
+     * Returns the receiving buffer size.
+     * @return Receiving buffer size
      */
     public static Integer getRecvBufferSize(){ return (Integer)SETTINGS.get("RecvBufferSize"); }
+
+    public static Integer getTimeout(){ return (Integer)SETTINGS.get("Timeout"); }
 
 	/**
 	 * Returns the port to use.

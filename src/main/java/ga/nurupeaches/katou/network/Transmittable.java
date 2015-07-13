@@ -10,6 +10,6 @@ public interface Transmittable {
 
     public void transferFrom(Peer peer) throws IOException;
 
-    public long getSize() throws IOException;
+    public int getSize() throws IOException;
 
 }

@@ -4,6 +4,7 @@ import ga.nurupeaches.katou.network.peer.Peer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.zip.CRC32;
 
 /**
@@ -28,30 +29,23 @@ public class MemoryChunk extends RepresentableChunk {
 
 	public MemoryChunk(){}
 
-	/**
-	 * Gets the current data.
-	 * @return The data.
-	 */
-	public ByteBuffer getData(){
-		return data;
-	}
-
 	@Override
 	public void transferFrom(Peer peer) throws IOException{
 		setId(peer.IN_BUFFER.getInt());
 		setSize(peer.IN_BUFFER.getInt());
-		data = ByteBuffer.allocateDirect((int)getSize());
-
-		peer.connection.recv(this.data);
+		data = ByteBuffer.allocateDirect(getSize());
+        data.put(Arrays.copyOfRange(peer.IN_BUFFER.array(), Integer.BYTES * 2, getSize()));
 	}
 
 	@Override
 	public void transferTo(Peer peer) throws IOException{
-		ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
+		ByteBuffer buffer = ByteBuffer.allocate(Byte.BYTES + Integer.BYTES * 3 + getSize());
+        buffer.put((byte)0x01);
+        buffer.putInt(getSize() + Integer.BYTES * 2);
 		buffer.putInt(getId());
-		buffer.putInt((int)getSize());
-		peer.connection.send(buffer);
-		peer.connection.send(data);
+		buffer.putInt(getSize());
+		buffer.put(data);
+        peer.connection.send(buffer);
 	}
 
 	@Override
@@ -61,4 +55,9 @@ public class MemoryChunk extends RepresentableChunk {
 		return checksum.getValue() == crc32;
 	}
 
+
+    @Override
+    public String toString(){
+        return "MemoryChunk{id=" + getId() + ",size=" + getSize() + '}';
+    }
 }

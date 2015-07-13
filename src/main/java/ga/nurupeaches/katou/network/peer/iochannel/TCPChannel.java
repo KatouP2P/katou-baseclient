@@ -1,9 +1,12 @@
 package ga.nurupeaches.katou.network.peer.iochannel;
 
+import ga.nurupeaches.katou.Configuration;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.Future;
+import java.nio.channels.CompletionHandler;
+import java.util.concurrent.TimeUnit;
 
 public class TCPChannel implements IOChannel {
 
@@ -14,13 +17,15 @@ public class TCPChannel implements IOChannel {
     }
 
     @Override
-    public Future<Integer> send(ByteBuffer buffer){
-        return channel.write(buffer);
+    public <A> A read(ByteBuffer[] buffers, A attachment, CompletionHandler<Long, ? super A> completionHandler) throws IOException {
+        channel.write(buffers, 0, buffers.length, Configuration.getTimeout(), TimeUnit.SECONDS, attachment, completionHandler);
+        return attachment;
     }
 
     @Override
-    public Future<Integer> recv(ByteBuffer buffer){
-        return channel.read(buffer);
+    public <A> A write(ByteBuffer[] buffers, A attachment, CompletionHandler<Long, ? super A> completionHandler) throws IOException {
+        channel.read(buffers, 0, buffers.length, Configuration.getTimeout(), TimeUnit.SECONDS, attachment, completionHandler);
+        return attachment;
     }
 
     @Override
