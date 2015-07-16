@@ -105,12 +105,6 @@ public class KatouDirectory implements Transmittable, Parentable<KatouDirectory>
 
         ByteBuffer buffer = ByteBuffer.allocate(getSize());
 
-        // write id
-        buffer.put((byte) 0x03);
-
-        // write memory size
-        buffer.putInt(getSize());
-
         // write directory name
         buffer.putInt(directoryName.length);
         BufferUtils.copyCharsToBuffer(directoryName, buffer);
@@ -175,7 +169,7 @@ public class KatouDirectory implements Transmittable, Parentable<KatouDirectory>
 
     @Override
     public int getSize() throws IOException{
-        return Byte.BYTES + Integer.BYTES * 2 + directoryName.length * Character.BYTES
+        return Integer.BYTES + directoryName.length * Character.BYTES
                 + Integer.BYTES + Integer.BYTES + Byte.BYTES +
                 (parent == null ? 0 : Integer.BYTES + parent.getName().length * Character.BYTES);
     }

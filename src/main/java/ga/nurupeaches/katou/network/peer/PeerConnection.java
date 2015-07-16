@@ -49,6 +49,14 @@ public class PeerConnection {
         address = null;
     }
 
+    public void send(ByteBuffer buffer) throws IOException {
+        channel.write(buffer);
+    }
+
+    public void recv(ByteBuffer buffer) throws IOException {
+        channel.read(buffer);
+    }
+
     public void send(ByteBuffer[] buffers) throws IOException {
         for(ByteBuffer buffer : buffers){
             if(buffer.position() != 0) buffer.flip();
@@ -87,6 +95,8 @@ public class PeerConnection {
             }
 
         });
+
+
     }
 
 }

@@ -21,7 +21,6 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
         this.channel = channel;
     }
 
-
     @Override
     public void completed(Integer numBytesRead, Peer peer){
         System.out.println('[' + Thread.currentThread().getName() + "] Accepted new connection from "
@@ -44,7 +43,9 @@ public class AuthenticationHandler implements CompletionHandler<Integer, Peer> {
                 + peer.connection.getAddress() + " using client " + version);
 
         PeerManager.get().registerPeer(peer);
-        channel.read(peer.IN_BUFFER, peer, new DataHandler(peer.IN_BUFFER));
+
+        ByteBuffer buffer = ByteBuffer.allocate(Byte.BYTES + Integer.BYTES);
+        channel.read(buffer, peer, new DataHandler(buffer));
     }
 
 

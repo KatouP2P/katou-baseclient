@@ -7,6 +7,14 @@ import java.nio.channels.CompletionHandler;
 
 public interface IOChannel {
 
+    public default void write(ByteBuffer buffer) throws IOException {
+        write(new ByteBuffer[]{buffer});
+    }
+
+    public default void read(ByteBuffer buffer) throws IOException {
+        read(new ByteBuffer[]{buffer});
+    }
+
     public default void write(ByteBuffer[] buffers) throws IOException {
         write(buffers, null, null);
     }

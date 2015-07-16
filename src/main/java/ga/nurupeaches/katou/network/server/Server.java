@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public interface Server {
 
-    public static final Logger NETWORK_LOGGER = Logger.getLogger("NETWK");
+    public static final Logger NETWORK_LOGGER = Logger.getLogger("Katou-Network");
 
     public void tick();
 

@@ -87,10 +87,6 @@ public class KatouFile implements Transmittable, Parentable<KatouDirectory>, Nam
 
         ByteBuffer buffer = ByteBuffer.allocate(getSize());
 
-        // write id
-        buffer.put((byte) 0x02);
-        // write memory size
-        buffer.putInt(getSize());
         // put the length of the name of the file
         buffer.putInt(name.length);
         // write out the chars for the name
@@ -119,41 +115,41 @@ public class KatouFile implements Transmittable, Parentable<KatouDirectory>, Nam
             throw new IOException("peer cannot be null!");
         }
 
-        ByteBuffer nameLen = ByteBuffer.allocate(Integer.BYTES);
-        ByteBuffer size = ByteBuffer.allocate(Long.BYTES);
-        ByteBuffer hash = ByteBuffer.allocate(HASH_SIZE);
-        ByteBuffer hasParent = ByteBuffer.allocate(1);
+        ByteBuffer nameLenBuffer = ByteBuffer.allocate(Integer.BYTES);
+        ByteBuffer sizeBuffer = ByteBuffer.allocate(Long.BYTES);
+        ByteBuffer hashBuffer = ByteBuffer.allocate(HASH_SIZE);
+        ByteBuffer parentNameLengthBuffer = ByteBuffer.allocate(Integer.BYTES);
 
-        ByteBuffer[] buffers = new ByteBuffer[]{nameLen, size, hash, hasParent};
-        peer.connection.recv();
+        peer.connection.recv(new ByteBuffer[]{nameLenBuffer, sizeBuffer, hashBuffer, parentNameLengthBuffer});
 
         // name first
-        int nameLen = peer.IN_BUFFER.getInt();
-        name = new char[nameLen];
-        BufferUtils.readBufferToChars(name, peer.IN_BUFFER, nameLen);
+        name = new char[nameLenBuffer.getInt()];
+        if(name.length <= 0) throw new IllegalArgumentException("Invalid KatouFile name");
 
         // then size
-        size = peer.IN_BUFFER.getLong();
+        size = sizeBuffer.getLong();
 
         // and then the hash
         hash = new byte[HASH_SIZE];
-        peer.IN_BUFFER.get(hash);
+        hashBuffer.get(hash);
 
-        byte hasParent = peer.IN_BUFFER.get();
-        switch(hasParent){
-            case 0:
-                break;
-            case 1:
-                int parentNameLen = peer.IN_BUFFER.getInt();
-                char[] parentName = new char[parentNameLen];
-                BufferUtils.readBufferToChars(parentName, peer.IN_BUFFER, parentNameLen);
+        int parentNameLength = parentNameLengthBuffer.getInt();
+        if(parentNameLength != 0){
+            ByteBuffer parentNameBuffer = ByteBuffer.allocate(parentNameLength * Character.BYTES);
+            peer.connection.recv(parentNameBuffer);
 
+            char[] parentName = new char[parentNameLength];
+            BufferUtils.readBufferToChars(name, parentNameBuffer, parentName.length);
         }
+
+        ByteBuffer nameBuffer = ByteBuffer.allocate(name.length * Character.BYTES);
+        peer.connection.recv(nameBuffer);
+        BufferUtils.readBufferToChars(name, nameBuffer, name.length);
     }
 
     @Override
     public int getSize(){
-        return Byte.BYTES + Integer.BYTES * 2 + (name.length * Character.BYTES)
+        return Integer.BYTES + name.length * Character.BYTES
                 + Long.BYTES + HASH_SIZE + Byte.BYTES +
                 (parent == null ? 0 : Integer.BYTES + parent.getName().length * Character.BYTES);
     }

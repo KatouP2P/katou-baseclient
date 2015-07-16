@@ -1,6 +1,5 @@
 package ga.nurupeaches.katou.network.server.handlers;
 
-import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.chunk.Chunk;
 import ga.nurupeaches.katou.chunk.MemoryChunk;
 import ga.nurupeaches.katou.filesystem.KatouDirectory;
@@ -9,17 +8,16 @@ import ga.nurupeaches.katou.filesystem.Nameable;
 import ga.nurupeaches.katou.network.Transmittable;
 import ga.nurupeaches.katou.network.peer.Peer;
 import ga.nurupeaches.katou.network.server.Server;
+import ga.nurupeaches.katou.proxy.ProxyRequest;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class DataHandler implements CompletionHandler<Integer, Peer> {
 
-    private int readTries = 0;
     private final ByteBuffer buffer;
 
     public DataHandler(ByteBuffer buffer){
@@ -29,20 +27,11 @@ public class DataHandler implements CompletionHandler<Integer, Peer> {
     @Override
     public void completed(Integer result, Peer peer){
         buffer.flip();
-        buffer.limit(result);
 
-        while(result > 0){
-            if(readTries > 3){
-                // IllegalStateException doesn't really "fit" here, but it's the closest.
-                failed(new IllegalStateException("Too many attempts to read!"), peer);
-                break;
-            }
-
-            result -= parseData(peer);
-            readTries++;
+        if(result == buffer.capacity()){
+            parseData(peer);
         }
 
-        readTries = 0;
         buffer.clear();
         ((AsynchronousSocketChannel)peer.connection.getRawChannel()).read(buffer, peer, this);
     }
@@ -54,13 +43,6 @@ public class DataHandler implements CompletionHandler<Integer, Peer> {
     public int parseData(Peer peer){
         byte id = buffer.get();
         int size = buffer.getInt();
-
-        if(size > peer.IN_BUFFER.capacity()){
-            ByteBuffer ext = ByteBuffer.allocate(size);
-            ext.put(peer.IN_BUFFER);
-            ((AsynchronousSocketChannel)peer.connection.getRawChannel()).read(ext, Configuration.getTimeout(), TimeUnit.SECONDS, peer, null);
-            peer.IN_BUFFER = ext;
-        }
 
         Transmittable transmittable = null;
         switch(id){
@@ -74,6 +56,14 @@ public class DataHandler implements CompletionHandler<Integer, Peer> {
 
             case 0x03:
                 transmittable = new KatouDirectory();
+                break;
+
+            case 0x11:
+                transmittable = new ProxyRequest();
+                break;
+
+            case 0x12:
+                // data to forward to server
                 break;
         }
 

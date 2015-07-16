@@ -1,6 +1,5 @@
 package ga.nurupeaches.katou.network.peer;
 
-import ga.nurupeaches.katou.Configuration;
 import ga.nurupeaches.katou.network.Transmittable;
 
 import java.nio.ByteBuffer;
@@ -9,10 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Peer {
 
-    /**
-     * Receving buffer
-     */
-    public ByteBuffer IN_BUFFER = ByteBuffer.allocate(Configuration.getRecvBufferSize());
+
+    public ByteBuffer IN_BUFFER;
 
     /**
      * Files that the peer has offered.
