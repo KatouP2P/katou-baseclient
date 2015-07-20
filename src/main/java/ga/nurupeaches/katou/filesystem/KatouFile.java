@@ -11,9 +11,9 @@ import java.nio.ByteBuffer;
 
 /*
  * Network Format:
- * ---------------------------------------------------------------------=========================
- * | Name Length | Name | Size | Hash bytes | Bit if in Directory (0/1) | Directory name/subdir |
- * ---------------------------------------------------------------------=========================
+ * --------------------------------------------------------------===============
+ * | Name Length | Size | Hash bytes | Parent Name Length | Name | Parent Name |
+ * --------------------------------------------------------------===============
  */
 public class KatouFile implements Transmittable, Parentable<KatouDirectory>, Nameable {
 
@@ -89,21 +89,20 @@ public class KatouFile implements Transmittable, Parentable<KatouDirectory>, Nam
 
         // put the length of the name of the file
         buffer.putInt(name.length);
-        // write out the chars for the name
-        BufferUtils.copyCharsToBuffer(name, buffer);
         // put size
         buffer.putLong(size);
         // put the hash of the file
         buffer.put(hash);
 
+        // write out the chars for the name
+        BufferUtils.copyCharsToBuffer(name, buffer);
+
         if(parent != null){
-            buffer.put((byte) 1);
-            // put the length of the name of the parent
             buffer.putInt(parent.getName().length);
             // write out the chars for the parent
             BufferUtils.copyCharsToBuffer(parent.getName(), buffer);
         } else {
-            buffer.put((byte)0);
+            buffer.putInt(0);
         }
 
         peer.connection.send(buffer);
@@ -139,7 +138,8 @@ public class KatouFile implements Transmittable, Parentable<KatouDirectory>, Nam
             peer.connection.recv(parentNameBuffer);
 
             char[] parentName = new char[parentNameLength];
-            BufferUtils.readBufferToChars(name, parentNameBuffer, parentName.length);
+            BufferUtils.readBufferToChars(parentName, parentNameBuffer, parentName.length);
+            // TODO: find KatouDirectory or make a new one based on parentName
         }
 
         ByteBuffer nameBuffer = ByteBuffer.allocate(name.length * Character.BYTES);
@@ -149,9 +149,8 @@ public class KatouFile implements Transmittable, Parentable<KatouDirectory>, Nam
 
     @Override
     public int getSize(){
-        return Integer.BYTES + name.length * Character.BYTES
-                + Long.BYTES + HASH_SIZE + Byte.BYTES +
-                (parent == null ? 0 : Integer.BYTES + parent.getName().length * Character.BYTES);
+        return Integer.BYTES + Long.BYTES + HASH_SIZE + Integer.BYTES + name.length * Character.BYTES +
+                (parent == null ? 0 : parent.getName().length * Character.BYTES);
     }
 
     @Override

@@ -13,9 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * Network Format:
- * ---------------------------------------------------------=========================
- * | Name Length | Name | Amount of KatouFiles | KatouFiles | Directory name/subdir |
- * ---------------------------------------------------------=========================
+ * ---------------------------------------------------------------------------------------------==============================================
+ * | Name Length | Amount of KatouFiles | Amount of KatouDirectorys | Parent Name Length | Name | Parent Name | KatouFiles | KatouDirectorys |
+ * ---------------------------------------------------------------------------------------------==============================================
  */
 public class KatouDirectory implements Transmittable, Parentable<KatouDirectory>, Nameable {
 
@@ -105,9 +105,8 @@ public class KatouDirectory implements Transmittable, Parentable<KatouDirectory>
 
         ByteBuffer buffer = ByteBuffer.allocate(getSize());
 
-        // write directory name
+        // write directory name length
         buffer.putInt(directoryName.length);
-        BufferUtils.copyCharsToBuffer(directoryName, buffer);
 
         if(files != null){
             // write the amount of files
@@ -123,12 +122,26 @@ public class KatouDirectory implements Transmittable, Parentable<KatouDirectory>
             buffer.putInt(0);
         }
 
+        // write length of directory name
         if(parent != null){
-            buffer.put((byte)1);
-            buffer.putInt(parent.getName().length);
-            BufferUtils.copyCharsToBuffer(parent.getName(), buffer);
+            buffer.putInt(parent.directoryName.length);
         } else {
-            buffer.put((byte)0);
+            buffer.putInt(0);
+        }
+
+        // write name of file
+        BufferUtils.copyCharsToBuffer(directoryName, buffer);
+
+        if(parent != null){
+            BufferUtils.copyCharsToBuffer(parent.directoryName, buffer);
+        }
+
+        for(KatouFile file : files.values()){
+            file.transferTo(peer);
+        }
+
+        for(KatouDirectory subdir : subdirectories.values()){
+            subdir.transferTo(peer);
         }
 
         peer.connection.send(buffer);

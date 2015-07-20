@@ -29,6 +29,7 @@ public class Proxy {
 
     public void newProxySession(ProxyRequest request){
         if(request.getOrigin().get() == null) throw new IllegalStateException("Peer expired and was GC'd");
+        // TODO: Implement black-list.
 
         SocketAddress address = request.getDest();
         Session session = new Session();
