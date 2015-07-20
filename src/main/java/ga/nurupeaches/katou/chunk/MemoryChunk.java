@@ -1,10 +1,6 @@
 package ga.nurupeaches.katou.chunk;
 
-import ga.nurupeaches.katou.network.peer.Peer;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.zip.CRC32;
 
 /**
@@ -29,24 +25,24 @@ public class MemoryChunk extends RepresentableChunk {
 
 	public MemoryChunk(){}
 
-	@Override
-	public void transferFrom(Peer peer) throws IOException{
-		setId(peer.IN_BUFFER.getInt());
-		setSize(peer.IN_BUFFER.getInt());
-		data = ByteBuffer.allocateDirect(getSize());
-        data.put(Arrays.copyOfRange(peer.IN_BUFFER.array(), Integer.BYTES * 2, getSize()));
-	}
-
-	@Override
-	public void transferTo(Peer peer) throws IOException{
-		ByteBuffer buffer = ByteBuffer.allocate(Byte.BYTES + Integer.BYTES * 3 + getSize());
-        buffer.put((byte)0x01);
-        buffer.putInt(getSize() + Integer.BYTES * 2);
-		buffer.putInt(getId());
-		buffer.putInt(getSize());
-		buffer.put(data);
-        peer.connection.send(buffer);
-	}
+//	@Override
+//	public void transferFrom(Peer peer) throws IOException{
+//		setId(peer.IN_BUFFER.getInt());
+//		setSize(peer.IN_BUFFER.getInt());
+//		data = ByteBuffer.allocateDirect(getSize());
+//        data.put(Arrays.copyOfRange(peer.IN_BUFFER.array(), Integer.BYTES * 2, getSize()));
+//	}
+//
+//	@Override
+//	public void transferTo(Peer peer) throws IOException{
+//		ByteBuffer buffer = ByteBuffer.allocate(Byte.BYTES + Integer.BYTES * 3 + getSize());
+//        buffer.put((byte)0x01);
+//        buffer.putInt(getSize() + Integer.BYTES * 2);
+//		buffer.putInt(getId());
+//		buffer.putInt(getSize());
+//		buffer.put(data);
+//        peer.connection.send(buffer);
+//	}
 
 	@Override
 	public boolean validate(long crc32){

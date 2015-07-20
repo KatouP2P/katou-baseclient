@@ -1,6 +1,6 @@
 package ga.nurupeaches.katou.chunk;
 
-import ga.nurupeaches.katou.network.Transmittable;
+import ga.nurupeaches.serichan.Transmittable;
 
 /**
  * Represents a chunk.

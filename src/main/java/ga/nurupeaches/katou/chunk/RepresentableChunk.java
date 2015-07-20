@@ -27,16 +27,9 @@ public abstract class RepresentableChunk implements Chunk {
         return id;
     }
 
-    public void setId(int id){
-        this.id = id;
-    }
-
     @Override
     public int getSize(){
-        return chunkSize;
+        return chunkSize + Integer.BYTES * 2;
     }
 
-    public void setSize(int size){
-        chunkSize = size;
-    }
 }

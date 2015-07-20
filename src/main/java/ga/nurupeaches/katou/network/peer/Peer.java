@@ -1,20 +1,16 @@
 package ga.nurupeaches.katou.network.peer;
 
-import ga.nurupeaches.katou.network.Transmittable;
+import ga.nurupeaches.serichan.Transmittable;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Peer {
 
-
-    public ByteBuffer IN_BUFFER;
-
     /**
      * Files that the peer has offered.
      */
-    public final Map<char[], Transmittable> OFFERED = new ConcurrentHashMap<>(1);
+    public final Map<String, Transmittable> OFFERED = new ConcurrentHashMap<>(1);
 
     /**
      * The current file we're working on.

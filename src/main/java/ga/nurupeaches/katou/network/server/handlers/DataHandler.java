@@ -5,12 +5,11 @@ import ga.nurupeaches.katou.chunk.MemoryChunk;
 import ga.nurupeaches.katou.filesystem.KatouDirectory;
 import ga.nurupeaches.katou.filesystem.KatouFile;
 import ga.nurupeaches.katou.filesystem.Nameable;
-import ga.nurupeaches.katou.network.Transmittable;
 import ga.nurupeaches.katou.network.peer.Peer;
 import ga.nurupeaches.katou.network.server.Server;
 import ga.nurupeaches.katou.proxy.ProxyRequest;
+import ga.nurupeaches.serichan.Transmittable;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
@@ -68,21 +67,17 @@ public class DataHandler implements CompletionHandler<Integer, Peer> {
         }
 
         if(transmittable != null){
-            try {
-                transmittable.transferFrom(peer);
+//          transmittable.transferFrom(peer);
 
-                if(transmittable instanceof Nameable){
-                    peer.OFFERED.put(((Nameable)transmittable).getName(), transmittable);
-                } else if(transmittable instanceof Chunk){
-                    // figure out what to do
-                } else {
-                    // u wot
-                }
-
-                System.out.println(transmittable.toString());
-            } catch (IOException e){
-                failed(e, peer);
+            if(transmittable instanceof Nameable){
+                peer.OFFERED.put(((Nameable)transmittable).getName(), transmittable);
+            } else if(transmittable instanceof Chunk){
+                // figure out what to do
+            } else {
+                // u wot
             }
+
+            System.out.println(transmittable.toString());
         }
 
         return Byte.BYTES + Integer.BYTES + size;
