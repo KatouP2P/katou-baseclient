@@ -83,7 +83,7 @@ public class CommonTransmissionTest extends TestCase {
                 KatouFile kFile;
                 for(File file : new File("C:\\Users\\Tsunko\\KatouTestingGrounds").listFiles()){
                     if(file.isDirectory()) continue;
-                    kFile = KatouFile.fromFile(file);
+                    kFile = new KatouFile(file);
                     kFile.transferTo(peer);
                 }
                 break;

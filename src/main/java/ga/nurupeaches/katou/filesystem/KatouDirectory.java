@@ -62,7 +62,7 @@ public class KatouDirectory implements Transmittable, Parentable<KatouDirectory>
             } else {
                 if(files == null) files = new ConcurrentHashMap<>(1);
 
-                fileInDir = KatouFile.fromFile(subfile);
+                fileInDir = new KatouFile(subfile);
                 fileInDir.setParent(this);
                 files.put(fileInDir.getName(), fileInDir);
             }
@@ -92,89 +92,6 @@ public class KatouDirectory implements Transmittable, Parentable<KatouDirectory>
     public void setParent(KatouDirectory parent){
         this.parent = parent;
     }
-
-//    @Override
-//    public void transferTo(Peer peer) throws IOException {
-//        if(peer == null){
-//            throw new IOException("peer cannot be null!");
-//        }
-//
-//        ByteBuffer buffer = ByteBuffer.allocate(getSize());
-//
-//        // write directory name length
-//        buffer.putInt(directoryName.length);
-//
-//        if(files != null){
-//            // write the amount of files
-//            buffer.putInt(files.size());
-//        } else {
-//            buffer.putInt(0);
-//        }
-//
-//        if(subdirectories != null){
-//            // write the amount of subdirectories
-//            buffer.putInt(subdirectories.size());
-//        } else {
-//            buffer.putInt(0);
-//        }
-//
-//        // write length of directory name
-//        if(parent != null){
-//            buffer.putInt(parent.directoryName.length);
-//        } else {
-//            buffer.putInt(0);
-//        }
-//
-//        // write name of file
-//        BufferUtils.copyCharsToBuffer(directoryName, buffer);
-//
-//        if(parent != null){
-//            BufferUtils.copyCharsToBuffer(parent.directoryName, buffer);
-//        }
-//
-//        for(KatouFile file : files.values()){
-//            file.transferTo(peer);
-//        }
-//
-//        for(KatouDirectory subdir : subdirectories.values()){
-//            subdir.transferTo(peer);
-//        }
-//
-//        peer.connection.send(buffer);
-//    }
-
-//    @Override
-//    public void transferFrom(Peer peer) throws IOException {
-//        if(peer == null){
-//            throw new IOException("peer cannot be null!");
-//        }
-//
-//        int directoryNameLen = peer.IN_BUFFER.getInt();
-//        directoryName = new char[directoryNameLen];
-//
-//        BufferUtils.readBufferToChars(directoryName, peer.IN_BUFFER, directoryNameLen);
-//
-//        int fileCount = peer.IN_BUFFER.getInt();
-//        if(fileCount != 0){
-//            files = new ConcurrentHashMap<>(fileCount);
-//        }
-//
-//        int subdirectoryCount = peer.IN_BUFFER.getInt();
-//        if(subdirectoryCount != 0){
-//            subdirectories = new ConcurrentHashMap<>(subdirectoryCount);
-//        }
-//
-//        byte hasParent = peer.IN_BUFFER.get();
-//        switch(hasParent){
-//            case 0:
-//                break;
-//            case 1:
-//                int parentNameLen = peer.IN_BUFFER.getInt();
-//                char[] parentName = new char[parentNameLen];
-//                BufferUtils.readBufferToChars(parentName, peer.IN_BUFFER, parentNameLen);
-//
-//        }
-//    }
 
     @Override
     public int getSize(){
